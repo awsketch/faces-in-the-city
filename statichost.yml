@@ -1,0 +1,4 @@
+# statichost.eu config — no build step, serve repo root as-is.
+# Omitting `image` and `command` tells statichost to skip the build
+# container entirely and publish the contents of `public:` directly.
+public: .
