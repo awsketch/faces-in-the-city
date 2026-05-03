@@ -1,0 +1,197 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 900" width="1280" height="900" font-family="Inter, 'Helvetica Neue', Arial, sans-serif">
+  <style>
+    .ink { fill: #000; }
+    .paper { fill: #fff; }
+    .stroke-bold { stroke: #000; stroke-width: 2; fill: none; }
+    .stroke-hair { stroke: #000; stroke-width: 1; fill: none; }
+    .label-caps { font-size: 11px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; fill: #000; }
+    .label-caps-mute { font-size: 11px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; fill: #4c4546; }
+    .meta { font-size: 11px; font-weight: 500; letter-spacing: 0.4px; fill: #4c4546; }
+    .display { font-family: 'Epilogue', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; }
+    .display-xl { font-size: 56px; letter-spacing: -1.6px; fill: #000; }
+    .display-lg { font-size: 24px; letter-spacing: -0.5px; fill: #000; font-weight: 600; }
+    .display-md { font-size: 18px; letter-spacing: -0.3px; fill: #000; font-weight: 600; }
+    .body { font-size: 12px; line-height: 1.5; fill: #4c4546; }
+    .body-ink { font-size: 12px; line-height: 1.5; fill: #1b1c1c; }
+    .invert { fill: #fff; }
+  </style>
+
+  <!-- ================= MASTHEAD ================= -->
+  <text x="64" y="58" class="display display-md">FITC</text>
+  <text x="1216" y="58" class="label-caps" text-anchor="end">Sitemap · Vol. 01</text>
+  <line x1="64" y1="80" x2="1216" y2="80" class="stroke-hair" />
+
+  <!-- ================= TITLE ================= -->
+  <text x="64" y="166" class="label-caps-mute">Faces in the City  ·  Information Architecture</text>
+  <text x="64" y="232" class="display display-xl">Sitemap.</text>
+  <text x="64" y="266" class="body" >Three states. One spot. The walk does the rest.</text>
+  <line x1="64" y1="300" x2="1216" y2="300" class="stroke-bold" />
+
+  <!-- ================= COLUMN HEADERS ================= -->
+  <text x="64"  y="332" class="label-caps">01 · Landing</text>
+  <text x="448" y="332" class="label-caps">02 · Sketch — Locked</text>
+  <text x="832" y="332" class="label-caps">03 · Sketch — Camera</text>
+
+  <!-- ================= ROW 1: LANDING ================= -->
+  <g transform="translate(64, 360)">
+    <rect width="320" height="380" class="paper stroke-bold" />
+    <!-- Internal masthead -->
+    <line x1="20" y1="48" x2="300" y2="48" class="stroke-hair" />
+    <text x="20" y="36" class="display display-md">FITC</text>
+    <text x="300" y="36" class="label-caps" text-anchor="end">Vol. 01</text>
+
+    <!-- Title block -->
+    <text x="20" y="100" class="label-caps-mute">Field Guide</text>
+    <text x="20" y="148" class="display" font-size="36" letter-spacing="-1px">Faces</text>
+    <text x="20" y="180" class="display" font-size="36" letter-spacing="-1px">in the City.</text>
+
+    <!-- Index header -->
+    <line x1="20" y1="208" x2="300" y2="208" class="stroke-hair" />
+    <text x="20" y="232" class="label-caps">The Index</text>
+    <text x="300" y="232" class="label-caps-mute" text-anchor="end">Open at the spot</text>
+    <line x1="20" y1="244" x2="300" y2="244" class="stroke-bold" />
+
+    <!-- TOC rows -->
+    <g>
+      <text x="20"  y="270" class="meta">01</text>
+      <text x="58"  y="266" class="display display-md">Piano Face</text>
+      <text x="58"  y="284" class="label-caps-mute">Berlin</text>
+      <text x="300" y="276" class="display" font-size="18" text-anchor="end">›</text>
+      <line x1="20" y1="298" x2="300" y2="298" class="stroke-hair" />
+    </g>
+    <g>
+      <text x="20"  y="320" class="meta">02</text>
+      <text x="58"  y="316" class="display display-md">Station Two</text>
+      <text x="58"  y="334" class="label-caps-mute">Berlin</text>
+      <text x="300" y="326" class="display" font-size="18" text-anchor="end">›</text>
+      <line x1="20" y1="348" x2="300" y2="348" class="stroke-hair" />
+    </g>
+    <g>
+      <text x="20"  y="370" class="meta">03</text>
+      <text x="58"  y="366" class="display display-md">Station Three</text>
+      <text x="300" y="376" class="display" font-size="18" text-anchor="end">›</text>
+    </g>
+  </g>
+
+  <!-- ================= ROW 1: LOCKED ================= -->
+  <g transform="translate(448, 360)">
+    <rect width="320" height="380" class="paper stroke-bold" />
+    <line x1="20" y1="48" x2="300" y2="48" class="stroke-hair" />
+    <text x="20" y="36" class="display display-md">FITC</text>
+    <text x="300" y="36" class="label-caps" text-anchor="end">The Index</text>
+
+    <!-- Header row -->
+    <g transform="translate(20, 76)">
+      <rect width="68" height="26" class="stroke-bold paper" />
+      <text x="34" y="18" class="label-caps" text-anchor="middle">← Index</text>
+      <text x="100" y="20" class="display display-lg">Piano Face</text>
+    </g>
+    <line x1="20" y1="120" x2="300" y2="120" class="stroke-hair" />
+
+    <!-- Locked badge -->
+    <g transform="translate(20, 148)">
+      <rect width="80" height="24" class="stroke-bold paper" />
+      <text x="40" y="16" class="label-caps" text-anchor="middle">[ Locked ]</text>
+    </g>
+
+    <text x="20" y="208" class="display display-lg">Berlin —</text>
+    <text x="20" y="232" class="display display-lg">Friedrichshain.</text>
+
+    <text x="20" y="266" class="body">Stand in front of the spot, point your</text>
+    <text x="20" y="282" class="body">camera at the building, and align the</text>
+    <text x="20" y="298" class="body">outline with what you see.</text>
+
+    <!-- CTA -->
+    <g transform="translate(20, 326)">
+      <rect width="148" height="44" class="ink" />
+      <text x="74" y="28" class="label-caps invert" text-anchor="middle">Open camera</text>
+    </g>
+  </g>
+
+  <!-- ================= ROW 1: CAMERA ================= -->
+  <g transform="translate(832, 360)">
+    <rect width="320" height="380" class="paper stroke-bold" />
+    <line x1="20" y1="48" x2="300" y2="48" class="stroke-hair" />
+    <text x="20" y="36" class="display display-md">FITC</text>
+    <text x="300" y="36" class="label-caps" text-anchor="end">The Index</text>
+
+    <g transform="translate(20, 76)">
+      <rect width="68" height="26" class="stroke-bold paper" />
+      <text x="34" y="18" class="label-caps" text-anchor="middle">← Index</text>
+      <text x="100" y="20" class="display display-lg">Piano Face</text>
+    </g>
+    <line x1="20" y1="120" x2="300" y2="120" class="stroke-hair" />
+
+    <!-- Viewfinder -->
+    <g transform="translate(20, 140)">
+      <rect width="280" height="180" class="ink" />
+      <!-- registration marks -->
+      <path d="M 8 8 L 8 24 M 8 8 L 24 8" stroke="#fff" stroke-width="2" fill="none" />
+      <path d="M 272 172 L 272 156 M 272 172 L 256 172" stroke="#fff" stroke-width="2" fill="none" />
+      <!-- overlay outline (face-ish) -->
+      <path d="M 100 50 Q 140 30 180 50 L 200 110 Q 180 150 140 150 Q 100 150 80 110 Z"
+            stroke="#fff" stroke-width="1.5" fill="none" />
+      <circle cx="124" cy="86" r="3" fill="#fff" />
+      <circle cx="156" cy="86" r="3" fill="#fff" />
+      <line x1="124" y1="116" x2="156" y2="116" stroke="#fff" stroke-width="1.5" />
+      <!-- readout -->
+      <g transform="translate(160, 12)">
+        <rect width="108" height="20" class="paper stroke-hair" />
+        <text x="8" y="14" class="label-caps">Aligning</text>
+        <text x="100" y="14" class="label-caps-mute" text-anchor="end">42%</text>
+      </g>
+    </g>
+
+    <!-- Controls -->
+    <g transform="translate(20, 336)">
+      <rect width="135" height="32" class="paper stroke-bold" />
+      <text x="68" y="21" class="label-caps" text-anchor="middle">Cancel</text>
+      <rect x="145" width="135" height="32" class="ink" />
+      <text x="213" y="21" class="label-caps invert" text-anchor="middle">Unlock</text>
+    </g>
+  </g>
+
+  <!-- ================= FLOW ARROWS (TOP ROW) ================= -->
+  <g class="ink">
+    <line x1="392" y1="500" x2="436" y2="500" class="stroke-bold" />
+    <polygon points="436,500 426,494 426,506" />
+  </g>
+  <g class="ink">
+    <line x1="776" y1="500" x2="820" y2="500" class="stroke-bold" />
+    <polygon points="820,500 810,494 810,506" />
+  </g>
+
+  <!-- ================= ROW 2 LABEL ================= -->
+  <text x="448" y="784" class="label-caps">04 · Sketch — Unlocked</text>
+
+  <!-- ================= ROW 2: UNLOCKED (centered, wider) ================= -->
+  <g transform="translate(448, 800)">
+    <!-- this card is wider to allow for sketch + player below -->
+    <!-- but we keep height tight for the page -->
+    <rect width="320" y="0" height="80" class="paper stroke-bold" />
+    <line x1="20" y1="32" x2="300" y2="32" class="stroke-hair" />
+    <text x="20" y="22" class="display display-md">FITC</text>
+    <text x="300" y="22" class="label-caps" text-anchor="end">Piano Face</text>
+
+    <!-- Sketch frame (inline preview) -->
+    <g transform="translate(16, 36)">
+      <rect width="40" height="40" class="paper stroke-bold" />
+      <path d="M 22 14 Q 30 8 38 14 L 42 28 Q 30 38 18 28 Z M 26 22 L 28 22 M 32 22 L 34 22 M 26 30 L 34 30"
+            stroke="#000" stroke-width="1" fill="none" />
+    </g>
+    <text x="68" y="56" class="display display-md">Audio</text>
+    <text x="68" y="70" class="label-caps-mute">▶  −10  +10  ·  0:42 / 2:18</text>
+  </g>
+
+  <!-- arrow from camera column down to unlocked -->
+  <g class="ink">
+    <line x1="992" y1="744" x2="992" y2="772" class="stroke-bold" />
+    <line x1="992" y1="772" x2="608" y2="772" class="stroke-bold" />
+    <line x1="608" y1="772" x2="608" y2="800" class="stroke-bold" />
+    <polygon points="608,800 602,790 614,790" />
+  </g>
+
+  <!-- caption near arrow -->
+  <text x="800" y="768" class="label-caps-mute" text-anchor="middle">On match  ·  or manual unlock</text>
+
+</svg>
