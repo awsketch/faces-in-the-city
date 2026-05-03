@@ -1,0 +1,13 @@
+{
+  "id": "station-02",
+  "title": "Untitled station",
+  "subtitle": "Rename this station when you know what it is",
+  "location": {
+    "name": "Berlin",
+    "lat": null,
+    "lng": null
+  },
+  "overlay": "overlay.svg",
+  "audio": "audio/speech.mp3",
+  "reference_photos": []
+}

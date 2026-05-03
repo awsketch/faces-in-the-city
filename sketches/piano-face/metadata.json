@@ -1,0 +1,13 @@
+{
+  "id": "piano-face",
+  "title": "Piano Face",
+  "subtitle": "Piano keys hiding in a Berlin façade",
+  "location": {
+    "name": "Berlin",
+    "lat": null,
+    "lng": null
+  },
+  "overlay": "overlay.svg",
+  "audio": "audio/speech.mp3",
+  "reference_photos": []
+}

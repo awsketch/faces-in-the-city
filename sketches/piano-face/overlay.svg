@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet">
+  <!--
+    Piano Face — placeholder doodle.
+    Replace this file with the real sketch when ready (same filename).
+    Strokes are black to match the black-on-white design; a CSS drop-shadow
+    on the .overlay element adds a white halo so the lines stay visible
+    over dark parts of the camera feed.
+  -->
+  <g fill="none" stroke="#111111" stroke-width="4"
+     stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- Building / face silhouette -->
+    <path d="M 70 470
+             L 70 180
+             Q 70 130 110 110
+             L 110 75
+             L 200 50
+             L 290 75
+             L 290 110
+             Q 330 130 330 180
+             L 330 470" />
+
+    <!-- Roofline ledge -->
+    <line x1="110" y1="110" x2="290" y2="110" stroke-dasharray="6 5" />
+
+    <!-- Left eye (window) -->
+    <rect x="120" y="200" width="60" height="70" rx="2" />
+    <line x1="150" y1="200" x2="150" y2="270" />
+    <line x1="120" y1="235" x2="180" y2="235" />
+
+    <!-- Right eye (window) -->
+    <rect x="220" y="200" width="60" height="70" rx="2" />
+    <line x1="250" y1="200" x2="250" y2="270" />
+    <line x1="220" y1="235" x2="280" y2="235" />
+
+    <!-- Eyebrows -->
+    <path d="M 120 188 Q 150 178 180 188" />
+    <path d="M 220 188 Q 250 178 280 188" />
+
+    <!-- Nose -->
+    <path d="M 200 290 L 192 360 L 215 365" />
+
+    <!-- Piano-keyboard mouth — outer frame and white-key dividers -->
+    <rect x="120" y="395" width="160" height="50" rx="3" />
+    <line x1="143" y1="395" x2="143" y2="445" />
+    <line x1="166" y1="395" x2="166" y2="445" />
+    <line x1="189" y1="395" x2="189" y2="445" />
+    <line x1="212" y1="395" x2="212" y2="445" />
+    <line x1="235" y1="395" x2="235" y2="445" />
+    <line x1="258" y1="395" x2="258" y2="445" />
+
+    <!-- Black keys (drawn as outlines so the whole sketch reads as line-art) -->
+    <rect x="135" y="395" width="14" height="30" />
+    <rect x="158" y="395" width="14" height="30" />
+    <rect x="200" y="395" width="14" height="30" />
+    <rect x="223" y="395" width="14" height="30" />
+    <rect x="246" y="395" width="14" height="30" />
+  </g>
+</svg>

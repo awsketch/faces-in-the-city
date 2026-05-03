@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Faces in the City</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main id="sketch-page" class="frame sketch-page">
+
+    <header class="masthead">
+      <a href="index.html" class="masthead__brand">FITC</a>
+      <span class="label-caps masthead__meta">
+        <span>The Index</span>
+      </span>
+    </header>
+
+    <header class="sketch-page__header">
+      <a href="index.html" class="back" aria-label="Back to list">← Index</a>
+      <h1 id="sketch-title">Loading…</h1>
+    </header>
+
+    <!-- LOCKED STATE -->
+    <section id="view-locked" class="view">
+      <div class="lock-card">
+        <span class="lock-card__icon" aria-hidden="true">[ Locked ]</span>
+        <p id="sketch-subtitle" class="lock-card__subtitle"></p>
+        <p class="lock-card__hint">
+          Stand in front of the spot, point your camera at the building, and align
+          the outline with what you see. The sketch unlocks when they match.
+        </p>
+        <div>
+          <button id="open-camera" class="primary">Open camera</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAMERA / ALIGNMENT STATE -->
+    <section id="view-camera" class="view view--camera hidden">
+      <div class="camera-stage">
+        <video id="camera-feed" autoplay playsinline muted></video>
+        <img id="camera-overlay" class="overlay" alt="" />
+        <div class="alignment-readout">
+          <span id="alignment-status">Looking for alignment…</span>
+          <span id="alignment-confidence">0%</span>
+        </div>
+      </div>
+      <div class="camera-controls">
+        <button id="close-camera" class="ghost">Cancel</button>
+        <button id="manual-unlock" class="primary">Unlock</button>
+      </div>
+      <p id="camera-error" class="error hidden"></p>
+    </section>
+
+    <!-- UNLOCKED STATE -->
+    <section id="view-unlocked" class="view hidden">
+      <div class="sketch-frame">
+        <img id="full-sketch" alt="" />
+      </div>
+
+      <div class="player" id="player">
+        <audio id="audio-player" preload="metadata"></audio>
+
+        <div class="player__controls">
+          <!-- Back 10 seconds -->
+          <button id="back-10" class="player__skip" aria-label="Back 10 seconds">
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <!-- Sharp angular reverse arc -->
+              <path d="M 6 12 L 6 6 L 12 6"
+                    fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="square" stroke-linejoin="miter" />
+              <path d="M 6 12 C 6 6, 26 6, 26 16 C 26 26, 6 26, 6 16"
+                    fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="square" stroke-linejoin="miter" />
+              <text x="16" y="22" text-anchor="middle"
+                    font-family="Inter, sans-serif"
+                    font-size="11" font-weight="700"
+                    letter-spacing="0.05em"
+                    fill="currentColor">10</text>
+            </svg>
+          </button>
+
+          <!-- Play / Pause -->
+          <button id="play-pause" class="player__play" aria-label="Play" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <!-- Sharp equilateral play triangle -->
+              <polygon id="icon-play" points="6,4 6,20 20,12" fill="currentColor" />
+              <!-- Pause bars -->
+              <g id="icon-pause" class="hidden">
+                <rect x="6"  y="4" width="4" height="16" fill="currentColor" />
+                <rect x="14" y="4" width="4" height="16" fill="currentColor" />
+              </g>
+            </svg>
+          </button>
+
+          <!-- Forward 10 seconds -->
+          <button id="forward-10" class="player__skip" aria-label="Forward 10 seconds">
+            <svg viewBox="0 0 32 32" aria-hidden="true">
+              <path d="M 26 12 L 26 6 L 20 6"
+                    fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="square" stroke-linejoin="miter" />
+              <path d="M 26 12 C 26 6, 6 6, 6 16 C 6 26, 26 26, 26 16"
+                    fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="square" stroke-linejoin="miter" />
+              <text x="16" y="22" text-anchor="middle"
+                    font-family="Inter, sans-serif"
+                    font-size="11" font-weight="700"
+                    letter-spacing="0.05em"
+                    fill="currentColor">10</text>
+            </svg>
+          </button>
+        </div>
+
+        <div class="player__time" aria-live="off">
+          <span id="time-current">0:00</span><span class="muted"> / </span><span id="time-total">0:00</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/alignment.js"></script>
+  <script src="js/sketch.js"></script>
+</body>
+</html>
