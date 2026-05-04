@@ -92,6 +92,7 @@ console.log('[sketch.js] file loaded');
     const fwd10El     = document.getElementById('forward-10');
     const tCurrentEl  = document.getElementById('time-current');
     const tTotalEl    = document.getElementById('time-total');
+    const seekEl      = document.getElementById('seek');
 
     if (audioEl && playPauseEl && back10El && fwd10El) {
       audioEl.src = audioUrl;
@@ -109,6 +110,21 @@ console.log('[sketch.js] file loaded');
         playPauseEl.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
       };
 
+      // Track if the user is actively dragging — don't fight their input
+      let userScrubbing = false;
+      const setSeekProgress = (pct) => {
+        if (!seekEl) return;
+        seekEl.style.setProperty('--progress', `${pct}%`);
+      };
+      const syncSeekFromAudio = () => {
+        if (!seekEl || userScrubbing) return;
+        const dur = audioEl.duration;
+        if (!isFinite(dur) || dur <= 0) return;
+        const pct = (audioEl.currentTime / dur) * 100;
+        seekEl.value = pct;
+        setSeekProgress(pct);
+      };
+
       playPauseEl.addEventListener('click', () => {
         if (audioEl.paused) audioEl.play().catch((err) => console.warn('play() failed', err));
         else audioEl.pause();
@@ -122,19 +138,45 @@ console.log('[sketch.js] file loaded');
         audioEl.currentTime = isFinite(dur) ? Math.min(dur, next) : next;
       });
 
+      if (seekEl) {
+        seekEl.addEventListener('pointerdown', () => { userScrubbing = true; });
+        seekEl.addEventListener('pointerup',   () => { userScrubbing = false; });
+        seekEl.addEventListener('input', () => {
+          const pct = Number(seekEl.value) || 0;
+          setSeekProgress(pct);
+          if (tCurrentEl && isFinite(audioEl.duration)) {
+            tCurrentEl.textContent = fmt((pct / 100) * audioEl.duration);
+          }
+        });
+        seekEl.addEventListener('change', () => {
+          const pct = Number(seekEl.value) || 0;
+          if (isFinite(audioEl.duration)) {
+            audioEl.currentTime = (pct / 100) * audioEl.duration;
+          }
+          userScrubbing = false;
+        });
+      }
+
       audioEl.addEventListener('play',  () => setPlayingUI(true));
       audioEl.addEventListener('pause', () => setPlayingUI(false));
-      audioEl.addEventListener('ended', () => { setPlayingUI(false); audioEl.currentTime = 0; });
+      audioEl.addEventListener('ended', () => {
+        setPlayingUI(false);
+        audioEl.currentTime = 0;
+        syncSeekFromAudio();
+      });
       audioEl.addEventListener('timeupdate', () => {
         if (tCurrentEl) tCurrentEl.textContent = fmt(audioEl.currentTime);
+        syncSeekFromAudio();
       });
       audioEl.addEventListener('loadedmetadata', () => {
         if (tTotalEl) tTotalEl.textContent = fmt(audioEl.duration);
+        syncSeekFromAudio();
       });
       audioEl.addEventListener('error', () => {
         playPauseEl.disabled = true;
         back10El.disabled = true;
         fwd10El.disabled = true;
+        if (seekEl) { seekEl.disabled = true; seekEl.style.opacity = '0.4'; }
         playPauseEl.style.opacity = '0.4';
         back10El.style.opacity = '0.4';
         fwd10El.style.opacity = '0.4';

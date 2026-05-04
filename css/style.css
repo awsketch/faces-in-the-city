@@ -506,12 +506,15 @@ hr {
 /* ----- Unlocked state ----- */
 
 .sketch-frame {
-  border: var(--stroke-bold) solid var(--ink);
-  padding: calc(var(--u) * 4);
+  border: 0;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--paper);
+  background: transparent;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
 }
 
 .sketch-frame img {
@@ -519,20 +522,18 @@ hr {
   height: auto;
 }
 
-/* Player */
+/* Player — free-floating, centered, Spotify-style proportions */
 
 .player {
-  margin-top: calc(var(--u) * 5);
-  border-top: var(--stroke-bold) solid var(--ink);
-  padding-top: calc(var(--u) * 3);
+  margin-top: calc(var(--u) * 6);
   display: grid;
   grid-template-areas:
-    "label   label"
-    "controls time";
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  row-gap: calc(var(--u) * 2);
-  column-gap: calc(var(--u) * 3);
+    "label"
+    "progress"
+    "controls";
+  justify-items: center;
+  text-align: center;
+  row-gap: calc(var(--u) * 3);
 }
 
 .player::before {
@@ -548,76 +549,142 @@ hr {
 
 .player audio { display: none; }
 
+/* Progress row: time-current  ━━━━━●────  time-total */
+.player__progress {
+  grid-area: progress;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.player__time {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--ink-mute);
+  flex-shrink: 0;
+  min-width: 4ch;
+}
+
+.player__progress > .player__time:first-child { color: var(--ink); text-align: right; }
+.player__progress > .player__time:last-child  { color: var(--ink-mute); text-align: left; }
+
+/* Seek slider — sharp, monochrome, thin black line */
+.player__seek {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 16px;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  --progress: 0%;
+}
+
+.player__seek:focus { outline: none; }
+.player__seek:focus-visible::-webkit-slider-thumb { outline: 2px solid var(--ink); outline-offset: 2px; }
+.player__seek:focus-visible::-moz-range-thumb { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+/* WebKit */
+.player__seek::-webkit-slider-runnable-track {
+  height: 1px;
+  background: linear-gradient(to right,
+    var(--ink) 0%, var(--ink) var(--progress),
+    var(--line-soft) var(--progress), var(--line-soft) 100%);
+  border: 0;
+  border-radius: 0;
+}
+.player__seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 10px;
+  background: var(--ink);
+  border: 0;
+  border-radius: 50%;
+  margin-top: -4.5px;
+}
+
+/* Firefox */
+.player__seek::-moz-range-track {
+  height: 1px;
+  background: var(--line-soft);
+  border: 0;
+  border-radius: 0;
+}
+.player__seek::-moz-range-progress {
+  height: 1px;
+  background: var(--ink);
+  border: 0;
+  border-radius: 0;
+}
+.player__seek::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  background: var(--ink);
+  border: 0;
+  border-radius: 50%;
+}
+
 .player__controls {
   grid-area: controls;
   display: flex;
-  align-items: stretch;
-  gap: 0;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 5);
 }
 
+/* Free-floating buttons — no enclosing box, just thin black line icons */
 .player__skip,
 .player__play {
-  border: var(--stroke-bold) solid var(--ink);
-  background: var(--paper);
+  border: 0;
+  background: transparent;
   color: var(--ink);
+  padding: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .player__skip {
   width: 56px;
   height: 56px;
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.player__skip + .player__play { border-left: 0; }
-.player__play + .player__skip { border-left: 0; }
-
-.player__skip svg {
-  width: 28px;
-  height: 28px;
 }
 
 .player__play {
-  width: 64px;
-  height: 56px;
-  background: var(--ink);
-  color: var(--paper);
+  width: 88px;
+  height: 88px;
 }
 
+.player__skip svg,
 .player__play svg {
-  width: 22px;
-  height: 22px;
+  width: 100%;
+  height: 100%;
 }
 
-.player__skip:hover  { background: var(--ink); color: var(--paper); }
-.player__play:hover  { background: var(--paper); color: var(--ink); }
+.player__skip:hover,
+.player__play:hover { opacity: 0.55; }
 
-.player__skip svg path,
-.player__skip svg polygon,
-.player__play svg path,
-.player__play svg polygon,
-.player__play svg rect {
-  fill: currentColor;
+.player__skip:active,
+.player__play:active { transform: translateY(1px); }
+
+/* Icons render as outline only — fills come from explicit text glyphs */
+.player svg :is(path, polygon, polyline, circle, rect, line) {
+  fill: none;
   stroke: currentColor;
 }
 
-.player__time {
-  grid-area: time;
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
-  color: var(--ink);
+.player svg text {
+  fill: currentColor;
+  stroke: none;
 }
-
-.player__time .muted { color: var(--ink-mute); }
 
 /* ----- Misc ----- */
 
