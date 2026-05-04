@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Faces in the City</title>
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-  <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
@@ -76,19 +75,19 @@
         </div>
 
         <div class="player__controls">
-          <!-- Back 10 seconds — full circular arc, integrated chevron arrowhead, big "10" -->
+          <!-- Back 10 seconds — iOS-style: gap and tangent chevron at upper-left -->
           <button id="back-10" class="player__skip" aria-label="Back 10 seconds">
             <svg viewBox="0 0 32 32" aria-hidden="true">
-              <!-- ~350° circular arc (radius 11), CCW with tiny gap at top -->
-              <path d="M 17 5.07 A 11 11 0 1 0 15 5.07"
-                    stroke-width="1.25" stroke-linecap="round" />
-              <!-- Chevron arrowhead at the gap, tip pointing back (left) -->
-              <polyline points="17.5,2.4 15,5.07 17.5,7.7"
-                        stroke-width="1.25" stroke-linejoin="miter" />
-              <!-- Big bold "10" -->
-              <text x="16" y="21" text-anchor="middle"
+              <!-- Long CCW arc from 11 o'clock to 10 o'clock (gap at 10:30) -->
+              <path d="M 10.5 6.5 A 11 11 0 1 0 6.5 10.5"
+                    stroke-width="1.5" stroke-linecap="round" />
+              <!-- Tangentially-aligned chevron, tip at arc end pointing CCW (down-left) -->
+              <polyline points="5.73,7.6 6.5,10.5 9.4,9.73"
+                        stroke-width="1.5" stroke-linejoin="miter" />
+              <!-- Big bold "10" centered in the disc -->
+              <text x="16" y="22" text-anchor="middle"
                     font-family="Inter, sans-serif"
-                    font-size="13" font-weight="700">10</text>
+                    font-size="14" font-weight="700">10</text>
             </svg>
           </button>
 
@@ -111,16 +110,16 @@
           <!-- Forward 10 seconds — mirror of back-10 -->
           <button id="forward-10" class="player__skip" aria-label="Forward 10 seconds">
             <svg viewBox="0 0 32 32" aria-hidden="true">
-              <!-- ~350° circular arc (radius 11), CW with tiny gap at top -->
-              <path d="M 15 5.07 A 11 11 0 1 1 17 5.07"
-                    stroke-width="1.25" stroke-linecap="round" />
-              <!-- Chevron arrowhead at the gap, tip pointing forward (right) -->
-              <polyline points="14.5,2.4 17,5.07 14.5,7.7"
-                        stroke-width="1.25" stroke-linejoin="miter" />
-              <!-- Big bold "10" -->
-              <text x="16" y="21" text-anchor="middle"
+              <!-- Long CW arc from 1 o'clock to 2 o'clock (gap at 1:30) -->
+              <path d="M 21.5 6.5 A 11 11 0 1 1 25.5 10.5"
+                    stroke-width="1.5" stroke-linecap="round" />
+              <!-- Tangentially-aligned chevron, tip at arc end pointing CW (down-right) -->
+              <polyline points="26.27,7.6 25.5,10.5 22.6,9.73"
+                        stroke-width="1.5" stroke-linejoin="miter" />
+              <!-- Big bold "10" centered in the disc -->
+              <text x="16" y="22" text-anchor="middle"
                     font-family="Inter, sans-serif"
-                    font-size="13" font-weight="700">10</text>
+                    font-size="14" font-weight="700">10</text>
             </svg>
           </button>
         </div>
