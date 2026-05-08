@@ -9,5 +9,10 @@
   },
   "overlay": "overlay.svg",
   "audio": "audio/speech.mp3",
-  "reference_photos": []
+  "reference_photos": [
+    "reference/piano face 1.png",
+    "reference/paino face 2.png",
+    "reference/piano face 3.png",
+    "reference/piano face 4.png"
+  ]
 }

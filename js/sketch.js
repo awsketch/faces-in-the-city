@@ -208,8 +208,10 @@ console.log('[sketch.js] file loaded');
       return;
     }
 
-    // Load reference photos (currently a no-op stub).
-    const reference = await window.Alignment.loadReference(meta.reference_photos || []);
+    // Build full URLs for reference photos (paths in metadata.json are
+    // relative to the sketch folder, e.g. "reference/piano face 1.png").
+    const referenceUrls = (meta.reference_photos || []).map(p => baseDir + p);
+    const reference = await window.Alignment.loadReference(referenceUrls);
 
     // Start the alignment loop.
     alignmentTimer = setInterval(async () => {
