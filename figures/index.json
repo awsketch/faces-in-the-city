@@ -37,6 +37,21 @@
       "photos": [
         "figures/worm-man/photos/_web/PHOTO-2026-10-21-17-14-35.jpg"
       ]
+    },
+    {
+      "id": "moaning-viking",
+      "title": "Moaning Viking",
+      "subtitle": "",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": "figures/moaning-viking/drawing/girl drawing.png",
+      "audio": null,
+      "photos": [
+        "figures/moaning-viking/photos/_web/PHOTO-2026-10-21-17-16-32.jpg"
+      ]
     }
   ]
 }
