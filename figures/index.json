@@ -1,0 +1,42 @@
+{
+  "figures": [
+    {
+      "id": "piano-face",
+      "title": "Piano Face",
+      "subtitle": "Piano keys hiding in a Berlin façade",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": "figures/piano-face/drawing/drawing.svg",
+      "audio": "figures/piano-face/audio/speech.mp3",
+      "photos": [
+        "figures/piano-face/photos/_web/IMG_2240.jpg",
+        "figures/piano-face/photos/_web/IMG_2241.jpg",
+        "figures/piano-face/photos/_web/IMG_2242.jpg",
+        "figures/piano-face/photos/_web/IMG_2243.jpg",
+        "figures/piano-face/photos/_web/IMG_2244.jpg",
+        "figures/piano-face/photos/_web/paino face 2.jpg",
+        "figures/piano-face/photos/_web/piano face 1.jpg",
+        "figures/piano-face/photos/_web/piano face 3.jpg",
+        "figures/piano-face/photos/_web/piano face 4.jpg"
+      ]
+    },
+    {
+      "id": "worm-man",
+      "title": "Worm Man",
+      "subtitle": "",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": "figures/worm-man/drawing/worm man drawing.png",
+      "audio": null,
+      "photos": [
+        "figures/worm-man/photos/_web/PHOTO-2026-10-21-17-14-35.jpg"
+      ]
+    }
+  ]
+}

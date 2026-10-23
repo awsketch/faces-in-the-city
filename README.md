@@ -1,96 +1,60 @@
-# Faces in the City
+# Berlin Kvetch
 
-Companion web app for a notebook of face/silhouette drawings tied to
-specific spots in the city. Users open the app at the location, pick the
-sketch from a list, point their camera at the building, and the sketch
-reveals itself with a short spoken-word piece when the camera frame lines
-up with reference photos of the spot.
+Cartoon figures hidden on objects around Berlin. Each figure has a
+transparent card with the drawing, a tiny map and a QR code:
 
-This is a static site — pure HTML / CSS / JS, no build step. Drop it on
-GitHub Pages (or any static host) and it works.
+1. The map on the card leads to the spot; the drawing on the card shows what to look for.
+2. Scanning the QR code opens the app **straight into the camera**, with the drawing as overlay.
+3. When the camera frame matches the reference photos of the object, the sound player opens.
+4. The only other screen is the **collection** (reachable from camera and player): which figures are unlocked.
 
----
+Static site — HTML / CSS / JS, no framework. Unlocks are remembered per browser.
 
-## Folder structure
+**Live at https://berlin-kvetch.chismes.de** (statichost.eu, custom subdomain).
+QR links: `https://berlin-kvetch.chismes.de/?f=<figure-folder>` — e.g. `?f=worm-man`.
+
+## Folders
 
 ```
-.
-├── index.html                  ← Landing page (list of sketches)
-├── sketch.html                 ← Per-sketch page (locked → camera → unlocked)
-├── css/
-│   └── style.css
-├── js/
-│   ├── landing.js              ← Renders the list on the home page
-│   ├── sketch.js               ← Camera, view states, audio
-│   └── alignment.js            ← Stub for the photo-matching logic
-└── sketches/
-    ├── index.json              ← Master list of sketches (one entry per face)
-    └── piano-face/             ← One folder per sketch
-        ├── metadata.json       ← Title, paths, location, reference list
-        ├── overlay.svg         ← The line-art doodle that overlays the camera
-        ├── reference/          ← Photos of the building, varied lighting/weather
-        │   └── README.md
-        └── audio/
-            ├── speech.mp3      ← The POV audio (you add this)
-            └── README.md
+index.html        the app (camera · player · collection)
+cards.html        print sheet for the cards (drawing + map + QR) — not linked from the app
+js/app.js         views, camera, unlock, player, collection
+js/alignment.js   photo matching (MobileNet embeddings, loaded only on the camera)
+css/style.css     Editorial Noir styling (design/DESIGN.md)
+tools/build.mjs   scans figures/ → figures/index.json
+figures/          ONE FOLDER PER FIGURE — see figures/README.md
 ```
 
----
+## Adding content
 
-## Adding a new sketch
+Drop the drawing into `drawing/`, the audio into `audio/` and the photos
+into `photos/` of `figures/<figure>/`, then run `node tools/build.mjs` or `./push.sh`.
 
-1. **Create a folder** under `sketches/` named after the sketch slug, e.g.
-   `sketches/clock-tower/`.
-2. **Add four things** inside it:
-   - `metadata.json` — copy from `sketches/piano-face/metadata.json` and edit
-     the `id`, `title`, `subtitle`, and `location`.
-   - `overlay.svg` — the line-art doodle that overlays the camera.
-   - `reference/` — drop photos of the building from the right angle here.
-     See `sketches/piano-face/reference/README.md` for naming/conventions.
-   - `audio/speech.mp3` — the spoken piece that plays when unlocked.
-3. **Register it** in `sketches/index.json` by adding a new entry to the
-   `sketches` array (id, title, location).
+## URLs
 
-That's it — no code changes needed.
+| URL | Opens |
+|---|---|
+| `/?f=worm-man` | camera with the Worm Man overlay (this is what the QR encodes) |
+| `/?f=worm-man#listen` | player (only if already unlocked) |
+| `/#collection` | collection |
 
----
+## Making the cards
 
-## Current state of alignment
+Open `cards.html` on the deployed site, check the app address at the top,
+print on A4 transparency (63 × 88 mm cards, 3 × 3 per page). Maps need
+`lat`/`lng` in each figure's `meta.json`.
 
-`js/alignment.js` is a **stub**. The camera page runs an alignment loop and
-shows a "0%" confidence readout, but the unlock happens via the manual
-**"I see it — unlock"** button.
+## Matching
 
-When reference photos exist, the planned implementation will:
-
-1. Run each reference photo through a small pretrained vision model
-   (MobileNet via TensorFlow.js is the likely pick) to get a feature
-   embedding — a vector describing the image content abstracted from
-   exact lighting.
-2. Average the embeddings across all reference photos for that sketch into
-   one "reference fingerprint."
-3. On each tick, capture a frame from the live camera, embed it the same
-   way, and compute cosine similarity. Above a threshold (~0.78), unlock
-   automatically.
-
-See the comments at the top of `js/alignment.js` for the wiring points.
-
----
+Same as before: every photo in `photos/` is embedded with MobileNet and
+averaged; the live frame unlocks at cosine similarity ≥ 0.78
+(`ALIGN_THRESHOLD` in `js/app.js`). The manual **Unlock** button on the
+camera is temporary until matching is proven in the field.
 
 ## Running locally
 
-Most browsers will block `getUserMedia` (camera) and `fetch` for `file://`
-URLs. Run a tiny local server:
-
 ```bash
-# Python 3
-python3 -m http.server 8080
-
-# or Node, if installed
-npx serve .
+python3 -m http.server 8080   # then http://localhost:8080/?f=worm-man
 ```
 
-Then open http://localhost:8080.
-
-For a real phone test, deploy to GitHub Pages or any HTTPS host — camera
-access requires HTTPS (or `localhost`).
+Camera access needs HTTPS or localhost.

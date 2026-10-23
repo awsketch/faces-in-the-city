@@ -1,158 +1,98 @@
-// alignment.js — camera/reference-photo matching via MobileNet embeddings.
+// alignment.js — camera ↔ reference-photo matching via MobileNet embeddings.
 //
-// Flow:
-//   1. loadReference(urls)
-//        - Waits for the MobileNet model to load (cached after first call).
-//        - For each URL, loads the image and runs it through MobileNet's
-//          embedding layer (1024-dimensional vector).
-//        - Averages all embeddings into one "reference fingerprint".
-//        - Returns { photos, fingerprint, ready }.
+//   loadReference(urls)   embeds every photo of the object, averages them
+//                         into one fingerprint → { fingerprint, ready, count }
+//   checkAlignment(video, reference)
+//                         embeds the current camera frame, returns cosine
+//                         similarity (0..1) against the fingerprint.
 //
-//   2. checkAlignment(videoEl, reference)
-//        - Captures the current video frame into a 224×224 offscreen canvas.
-//        - Gets its MobileNet embedding.
-//        - Returns cosine similarity against reference.fingerprint (0..1).
-//        - sketch.js unlocks when score >= ALIGN_THRESHOLD (currently 0.78).
-//
-// The manual-unlock button stays visible until camera matching is proven in
-// the field; see project memory note on this.
+// TensorFlow.js + MobileNet are loaded lazily on first use, so the player
+// and collection screens never download them.
 
 window.Alignment = (function () {
+  const LIBS = [
+    'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js',
+    'https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js',
+  ];
 
-  // ── Model singleton ────────────────────────────────────────────────────────
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = () => reject(new Error('Could not load ' + src));
+      document.head.appendChild(s);
+    });
+  }
 
-  let _modelPromise = null;
-
+  let modelPromise = null;
   function getModel() {
-    if (!_modelPromise) {
-      console.log('[alignment] Loading MobileNet model…');
-      _modelPromise = mobilenet.load({ version: 2, alpha: 1.0 })
-        .then(m => { console.log('[alignment] MobileNet ready ✓'); return m; })
-        .catch(err => { console.error('[alignment] MobileNet load FAILED:', err); _modelPromise = null; throw err; });
+    if (!modelPromise) {
+      modelPromise = (async () => {
+        for (const src of LIBS) await loadScript(src);
+        return mobilenet.load({ version: 2, alpha: 1.0 });
+      })().catch((err) => { modelPromise = null; throw err; });
     }
-    return _modelPromise;
+    return modelPromise;
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-
-  /** Cosine similarity between two Float32Arrays. Returns a value in [0, 1]. */
-  function cosineSimilarity(a, b) {
-    let dot = 0, normA = 0, normB = 0;
-    for (let i = 0; i < a.length; i++) {
-      dot   += a[i] * b[i];
-      normA += a[i] * a[i];
-      normB += b[i] * b[i];
-    }
-    const denom = Math.sqrt(normA) * Math.sqrt(normB);
-    return denom < 1e-10 ? 0 : dot / denom;
+  function cosine(a, b) {
+    let dot = 0, na = 0, nb = 0;
+    for (let i = 0; i < a.length; i++) { dot += a[i] * b[i]; na += a[i] * a[i]; nb += b[i] * b[i]; }
+    const d = Math.sqrt(na) * Math.sqrt(nb);
+    return d < 1e-10 ? 0 : dot / d;
   }
 
-  /** Get MobileNet embedding for an image/canvas/video element. */
-  async function getEmbedding(model, imgEl) {
-    // infer(el, true) returns the penultimate-layer activations (1024-d).
-    const tensor = model.infer(imgEl, /* embedding= */ true);
-    const data = await tensor.data();
-    tensor.dispose();
-    return data; // Float32Array
+  async function embed(model, el) {
+    const t = model.infer(el, true);
+    const data = await t.data();
+    t.dispose();
+    return data;
   }
 
-  /** Load an image element from a URL. Handles spaces in filenames. */
   function loadImage(url) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.onload  = () => resolve(img);
-      img.onerror = (e) => reject(new Error(`Could not load image: ${url}`));
-      // encodeURI is idempotent — safe to call even if already encoded.
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Could not load ' + url));
       img.src = encodeURI(url);
     });
   }
 
-  // ── Public API ─────────────────────────────────────────────────────────────
-
-  /**
-   * Load reference photos and compute an average embedding fingerprint.
-   * @param {string[]} referenceImageUrls  Full URLs (or paths) to reference images.
-   * @returns {{ photos: string[], fingerprint: Float32Array|null, ready: boolean }}
-   */
-  async function loadReference(referenceImageUrls) {
-    if (!referenceImageUrls || referenceImageUrls.length === 0) {
-      console.log('[alignment] No reference photos — manual-unlock mode.');
-      return { photos: [], fingerprint: null, ready: false };
-    }
+  async function loadReference(urls) {
+    const empty = { fingerprint: null, ready: false, count: 0 };
+    if (!urls || urls.length === 0) return empty;
 
     let model;
-    try {
-      model = await getModel();
-    } catch (err) {
-      console.error('[alignment] Cannot load model — falling back to manual unlock.', err);
-      return { photos: referenceImageUrls, fingerprint: null, ready: false };
-    }
+    try { model = await getModel(); }
+    catch (err) { console.error('[alignment] model load failed', err); return { ...empty, error: 'model' }; }
 
-    const embeddings = [];
-    for (const url of referenceImageUrls) {
-      try {
-        console.log('[alignment] Embedding reference image:', url);
-        const img = await loadImage(url);
-        const emb = await getEmbedding(model, img);
-        embeddings.push(emb);
-        console.log('[alignment] ✓', url);
-      } catch (err) {
-        console.warn('[alignment] Skipping reference image (load failed):', url, err);
-      }
+    const embs = [];
+    for (const url of urls) {
+      try { embs.push(await embed(model, await loadImage(url))); }
+      catch (err) { console.warn('[alignment] skipped', url, err); }
     }
+    if (embs.length === 0) return empty;
 
-    if (embeddings.length === 0) {
-      console.warn('[alignment] All reference images failed — manual-unlock mode.');
-      return { photos: referenceImageUrls, fingerprint: null, ready: false };
-    }
-
-    // Average all embeddings into one fingerprint.
-    const dim = embeddings[0].length;
-    const fingerprint = new Float32Array(dim);
-    for (const emb of embeddings) {
-      for (let i = 0; i < dim; i++) fingerprint[i] += emb[i];
-    }
-    for (let i = 0; i < dim; i++) fingerprint[i] /= embeddings.length;
-
-    console.log(`[alignment] Fingerprint ready (${embeddings.length}/${referenceImageUrls.length} photos, dim=${dim}) ✓`);
-    return { photos: referenceImageUrls, fingerprint, ready: true };
+    const fp = new Float32Array(embs[0].length);
+    for (const e of embs) for (let i = 0; i < fp.length; i++) fp[i] += e[i];
+    for (let i = 0; i < fp.length; i++) fp[i] /= embs.length;
+    return { fingerprint: fp, ready: true, count: embs.length };
   }
 
-  // Reusable 224×224 offscreen canvas for capturing video frames.
-  let _canvas = null;
-  let _ctx    = null;
-
-  /**
-   * Compare the current camera frame against the reference fingerprint.
-   * @param {HTMLVideoElement} videoEl
-   * @param {{ fingerprint: Float32Array|null, ready: boolean }} reference
-   * @returns {Promise<number>}  Cosine similarity in [0, 1].
-   */
-  async function checkAlignment(videoEl, reference) {
-    if (!reference || !reference.ready || !reference.fingerprint) return 0;
-    if (!videoEl || videoEl.readyState < 2) return 0; // no frame yet
-
-    // Capture current frame at 224×224 (MobileNet's expected input size).
-    if (!_canvas) {
-      _canvas = document.createElement('canvas');
-      _canvas.width  = 224;
-      _canvas.height = 224;
-      _ctx = _canvas.getContext('2d');
+  let canvas = null, ctx = null;
+  async function checkAlignment(video, reference) {
+    if (!reference || !reference.ready || !video || video.readyState < 2) return 0;
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.width = canvas.height = 224;
+      ctx = canvas.getContext('2d');
     }
-    _ctx.drawImage(videoEl, 0, 0, 224, 224);
-
-    try {
-      const model = await getModel();
-      const emb   = await getEmbedding(model, _canvas);
-      const score = cosineSimilarity(emb, reference.fingerprint);
-      return score;
-    } catch (err) {
-      console.warn('[alignment] checkAlignment error:', err);
-      return 0;
-    }
+    ctx.drawImage(video, 0, 0, 224, 224);
+    try { return cosine(await embed(await getModel(), canvas), reference.fingerprint); }
+    catch (err) { console.warn('[alignment]', err); return 0; }
   }
 
   return { loadReference, checkAlignment };
-
 })();
