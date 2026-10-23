@@ -85,11 +85,58 @@
   async function enterCamera() {
     const f = figure();
     $('cam-figure-title').textContent = f.title;
-    overlay.src = f.drawing ? encodeURI(f.drawing) : '';
-    overlay.classList.toggle('hidden', !f.drawing);
+    overlay.removeAttribute('src');
+    overlay.classList.add('hidden');
+    if (f.drawing) {
+      lineArt(f.drawing).then((src) => {
+        if (figure() !== f) return;
+        overlay.src = src;
+        overlay.classList.remove('hidden');
+      });
+    }
     $('cam-listen').classList.toggle('hidden', !isUnlocked(f.id));
     scoreEl.textContent = '0%';
     await startCamera();
+  }
+
+  // Turns any drawing into pure black lines on transparent: white (and light
+  // paper tones) become see-through, darkness becomes line opacity. So a PNG
+  // or JPG with a white background overlays the camera with only its lines.
+  const lineArtCache = {};
+  function lineArt(url) {
+    if (lineArtCache[url]) return lineArtCache[url];
+    lineArtCache[url] = new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const MAX = 1400;
+          const k = Math.min(1, MAX / Math.max(img.naturalWidth || MAX, img.naturalHeight || MAX));
+          const w = Math.round((img.naturalWidth || MAX) * k), h = Math.round((img.naturalHeight || MAX) * k);
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const d = ctx.getImageData(0, 0, w, h);
+          const px = d.data;
+          for (let i = 0; i < px.length; i += 4) {
+            const lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+            // light tones (> ~85% white) vanish; darker tones ramp to full black
+            let a = (0.85 - lum / 255) / 0.85;
+            a = Math.max(0, Math.min(1, a)) * (px[i + 3] / 255);
+            px[i] = px[i + 1] = px[i + 2] = 0;
+            px[i + 3] = Math.round(a * 255);
+          }
+          ctx.putImageData(d, 0, 0);
+          resolve(c.toDataURL('image/png'));
+        } catch (err) {
+          console.warn('lineArt failed, using original', err);
+          resolve(encodeURI(url));
+        }
+      };
+      img.onerror = () => resolve(encodeURI(url));
+      img.src = encodeURI(url);
+    });
+    return lineArtCache[url];
   }
 
   async function startCamera() {
