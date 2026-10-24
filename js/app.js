@@ -11,15 +11,22 @@
   const ALIGN_THRESHOLD = 0.78;
   const ALIGN_INTERVAL_MS = 800;
   const STORE_KEY = 'berlin-kvetch.unlocked';
+  // Demo mode (demo.html): live camera, but matching is simulated with a
+  // hold-to-match button, and unlocks live in memory only (never saved).
+  const DEMO = Boolean(window.KVETCH_DEMO);
+  const demoUnlocked = {};
+  if (DEMO) document.body.classList.add('demo');
 
   // ---------- Unlock store ----------
   function readUnlocked() {
+    if (DEMO) return demoUnlocked;
     try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; }
   }
   let unlocked = readUnlocked();
   function isUnlocked(id) { return Boolean(unlocked[id]); }
   function markUnlocked(id) {
     unlocked[id] = new Date().toISOString();
+    if (DEMO) return;
     try { localStorage.setItem(STORE_KEY, JSON.stringify(unlocked)); } catch {}
   }
 
@@ -33,6 +40,11 @@
     console.error('Could not load figures/index.json — run `node tools/build.mjs`', err);
   }
   const byId = Object.fromEntries(figures.map((f) => [f.id, f]));
+
+  // Demo opened without ?f= → start on the first figure's camera
+  if (DEMO && figures.length && !byId[new URLSearchParams(location.search).get('f')]) {
+    history.replaceState(null, '', location.pathname + '?f=' + encodeURIComponent(figures[0].id));
+  }
 
   const views = { camera: $('view-camera'), player: $('view-player'), collection: $('view-collection') };
   let current = null;       // current view name
@@ -157,6 +169,8 @@
     video.srcObject = stream;
     await video.play().catch(() => {});
 
+    if (DEMO) { statusEl.textContent = 'Searching…'; return; }
+
     const f = figure();
     if (!f.photos || f.photos.length === 0) { statusEl.textContent = 'No reference photos yet'; return; }
     statusEl.textContent = 'Loading matcher…';
@@ -181,6 +195,7 @@
   }
   function stopCamera() {
     camSession++;
+    if (DEMO) stopHold(true);
     if (timer) clearInterval(timer);
     timer = null;
     stopStream();
@@ -194,6 +209,44 @@
     if (current !== 'camera') return;
     if (document.hidden) stopCamera(); else startCamera();
   });
+
+  // ---------- Demo: hold-to-match ----------
+  let holdTimer = null, holding = false, simScore = 0;
+  const holdBtn = $('demo-hold');
+  function stopHold(reset) {
+    holding = false;
+    if (holdBtn) holdBtn.classList.remove('is-holding');
+    if (reset) { clearInterval(holdTimer); holdTimer = null; simScore = 0; }
+  }
+  function tickHold() {
+    if (holding) simScore = Math.min(1, simScore + 0.018 + Math.random() * 0.02);   // ~2.5 s to full
+    else simScore = Math.max(0, simScore - 0.06);
+    scoreEl.textContent = Math.round(simScore * 100) + '%';
+    statusEl.textContent = simScore >= 1 ? 'Match' : simScore > 0.5 ? 'Almost there…' : 'Searching…';
+    if (simScore >= 1) {
+      clearInterval(holdTimer); holdTimer = null;
+      stopHold(false);
+      setTimeout(() => { simScore = 0; unlock(); }, 450);
+    } else if (!holding && simScore === 0) {
+      clearInterval(holdTimer); holdTimer = null;
+    }
+  }
+  if (DEMO && holdBtn) {
+    const press = (e) => {
+      e.preventDefault();
+      if (simScore >= 1) return;
+      holding = true;
+      holdBtn.classList.add('is-holding');
+      try { holdBtn.setPointerCapture(e.pointerId); } catch {}
+      if (!holdTimer) holdTimer = setInterval(tickHold, 50);
+    };
+    const release = () => { if (holding) stopHold(false); };
+    holdBtn.addEventListener('pointerdown', press);
+    holdBtn.addEventListener('pointerup', release);
+    holdBtn.addEventListener('pointercancel', release);
+    holdBtn.addEventListener('lostpointercapture', release);
+    holdBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
 
   let justUnlocked = false;
   function unlock() {
@@ -284,32 +337,32 @@
     unlocked = readUnlocked();
     const grid = $('coll-grid');
     const n = figures.filter((f) => isUnlocked(f.id)).length;
-    $('coll-count').textContent = `${n} / ${figures.length} unlocked`;
+    $('coll-count').textContent = `${n} / ${figures.length} found`;
 
     grid.innerHTML = '';
-    if (figures.length === 0) {
-      grid.innerHTML = '<li class="coll-empty">No figures yet.</li>';
+    const found = figures
+      .map((f, i) => ({ f, no: i + 1 }))
+      .filter(({ f }) => isUnlocked(f.id));
+    if (found.length === 0) {
+      grid.innerHTML = '<li class="coll-empty">Nothing found yet.</li>';
     }
-    figures.forEach((f, i) => {
-      const open = isUnlocked(f.id);
+    found.forEach(({ f, no }) => {
       const li = document.createElement('li');
-      li.className = 'coll-tile' + (open ? ' coll-tile--open' : '');
-      const inner = document.createElement(open ? 'a' : 'div');
-      if (open) {
-        inner.href = `?f=${encodeURIComponent(f.id)}#listen`;
-        inner.addEventListener('click', (e) => {
-          e.preventDefault();
-          navigate(`?f=${encodeURIComponent(f.id)}`, 'listen');
-        });
-      }
-      inner.className = 'coll-tile__inner';
-      inner.innerHTML = `
+      li.className = 'coll-tile';
+      const a = document.createElement('a');
+      a.className = 'coll-tile__inner';
+      a.href = `?f=${encodeURIComponent(f.id)}#listen`;
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigate(`?f=${encodeURIComponent(f.id)}`, 'listen');
+      });
+      a.innerHTML = `
         <span class="coll-tile__img">${f.drawing ? `<img src="${encodeURI(f.drawing)}" alt="" loading="lazy" />` : ''}</span>
         <span class="coll-tile__meta">
-          <span class="label-caps">No. ${String(i + 1).padStart(2, '0')}</span>
-          <span class="coll-tile__name">${open ? escapeHtml(f.title) : 'Locked'}</span>
+          <span class="label-caps">No. ${String(no).padStart(2, '0')}</span>
+          <span class="coll-tile__name">${escapeHtml(f.title)}</span>
         </span>`;
-      li.appendChild(inner);
+      li.appendChild(a);
       grid.appendChild(li);
     });
 

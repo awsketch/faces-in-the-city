@@ -26,8 +26,14 @@ html, body {
   color: var(--ink-soft);
   font: 16px/1.5 var(--font-body);
   -webkit-font-smoothing: antialiased;
-  min-height: 100dvh;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+  /* app-like: no pinch / double-tap zoom, only vertical scrolling */
+  touch-action: pan-y;
 }
+body { min-height: 100svh; }
+a, button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 img, video { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: 0; padding: 0; border-radius: 0; cursor: pointer; }
@@ -124,6 +130,16 @@ button:disabled { cursor: default; opacity: .35; }
 .cam-foot__hint { margin: 0 0 12px; font-size: 14px; }
 .cam-foot__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .cam-foot__actions { display: flex; gap: 8px; }
+.demo-hold {
+  display: block; width: 100%;
+  margin-top: 16px; min-height: 64px;
+  border: 2px solid var(--paper); background: transparent; color: var(--paper);
+  font: 600 13px/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase;
+  touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  transition: background .12s ease, color .12s ease;
+}
+.demo .cam-overlay { padding-bottom: 220px; }
+.demo-hold.is-holding { background: var(--paper); color: var(--ink); }
 .cam-start {
   position: absolute; left: var(--margin); right: var(--margin); top: 50%;
   transform: translateY(-50%);
@@ -206,13 +222,19 @@ button:disabled { cursor: default; opacity: .35; }
 }
 @media (min-width: 720px) { .coll-grid { grid-template-columns: repeat(4, 1fr); } }
 .coll-tile { border-bottom: 1px solid var(--ink); border-right: 1px solid var(--ink); }
-.coll-tile__inner { display: flex; flex-direction: column; height: 100%; }
+.coll-tile { min-width: 0; }
+.coll-tile__inner { display: block; }
 .coll-tile__img {
+  position: relative;
+  display: block;
   aspect-ratio: 4 / 5;
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px;
+  overflow: hidden;
 }
-.coll-tile__img img { width: 100%; height: 100%; object-fit: contain; }
+.coll-tile__img img {
+  position: absolute; inset: 16px;
+  width: calc(100% - 32px); height: calc(100% - 32px); max-width: none;
+  object-fit: contain;
+}
 .coll-tile__meta {
   display: flex; flex-direction: column; gap: 4px;
   padding: 12px 16px 16px;
@@ -220,14 +242,17 @@ button:disabled { cursor: default; opacity: .35; }
 }
 .coll-tile__name { font: 700 18px/1.15 var(--font-display); letter-spacing: -.01em; color: var(--ink); }
 
-/* locked: drawing as faint ghost, no interaction */
-.coll-tile:not(.coll-tile--open) .coll-tile__img img { opacity: .12; filter: grayscale(1); }
-.coll-tile:not(.coll-tile--open) .coll-tile__name { color: var(--ink-mute); }
-/* unlocked: inverts on press */
-.coll-tile--open a:hover, .coll-tile--open a:active { background: var(--ink); color: var(--paper); }
-.coll-tile--open a:hover .coll-tile__name, .coll-tile--open a:active .coll-tile__name { color: var(--paper); }
-.coll-tile--open a:hover img, .coll-tile--open a:active img { filter: invert(1); }
-.coll-tile--open a:hover .coll-tile__meta { border-top-color: var(--paper); }
+/* tiles invert on press (hover only on real pointers, so taps on phones don't stick) */
+.coll-tile a:active { background: var(--ink); color: var(--paper); }
+.coll-tile a:active .coll-tile__name { color: var(--paper); }
+.coll-tile a:active img { filter: invert(1); }
+.coll-tile a:active .coll-tile__meta { border-top-color: var(--paper); }
+@media (hover: hover) {
+  .coll-tile a:hover { background: var(--ink); color: var(--paper); }
+  .coll-tile a:hover .coll-tile__name { color: var(--paper); }
+  .coll-tile a:hover img { filter: invert(1); }
+  .coll-tile a:hover .coll-tile__meta { border-top-color: var(--paper); }
+}
 
 .coll-empty { padding: 24px var(--margin); }
 .coll-foot { padding: 40px var(--margin) calc(40px + var(--safe-bottom)); margin: 0; color: var(--ink-mute); font-size: 14px; }
