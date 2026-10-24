@@ -253,3 +253,21 @@ button:disabled { cursor: default; opacity: .35; }
 
 .coll-empty { padding: 24px var(--margin); }
 .coll-foot { padding: 40px var(--margin) calc(40px + var(--safe-bottom)); margin: 0; color: var(--ink-mute); font-size: 14px; }
+
+/* ----- Desktop: project description instead of the collection ----- */
+.coll-desktop {
+  max-width: 640px;
+  padding: 48px var(--margin) calc(64px + var(--safe-bottom));
+}
+.coll-desktop p { margin: 0 0 20px; font-size: 18px; line-height: 1.55; color: var(--ink-soft); }
+.coll-desktop__lede {
+  font: 400 clamp(28px, 3.2vw, 40px)/1.15 var(--font-display) !important;
+  letter-spacing: -.02em;
+  color: var(--ink) !important;
+  margin-bottom: 32px !important;
+}
+.coll-desktop__lede b { font-weight: 700; }
+.coll-desktop__note { color: var(--ink-mute) !important; font-size: 12px !important; margin: 32px 0 20px !important; }
+/* same link treatment as the project descriptions on chismes.de */
+.text-link { color: inherit; text-decoration: underline; text-underline-offset: .15em; }
+.text-link:hover { opacity: .6; }

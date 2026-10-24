@@ -16,15 +16,25 @@
   const DEMO = Boolean(window.KVETCH_DEMO);
   const demoUnlocked = {};
   if (DEMO) document.body.classList.add('demo');
+  // Computer = no touch-first pointer. There, only the (always empty) collection
+  // page with the project description is reachable; nothing can be unlocked.
+  // The demo page is exempt so it can still be shown on any screen.
+  const DESKTOP = !DEMO && !window.matchMedia('(pointer: coarse) and (hover: none)').matches;
+  if (DESKTOP) {
+    document.body.classList.add('desktop');
+    if (location.search || location.hash) history.replaceState(null, '', location.pathname);
+  }
 
   // ---------- Unlock store ----------
   function readUnlocked() {
     if (DEMO) return demoUnlocked;
+    if (DESKTOP) return {};
     try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; }
   }
   let unlocked = readUnlocked();
   function isUnlocked(id) { return Boolean(unlocked[id]); }
   function markUnlocked(id) {
+    if (DESKTOP) return;
     unlocked[id] = new Date().toISOString();
     if (DEMO) return;
     try { localStorage.setItem(STORE_KEY, JSON.stringify(unlocked)); } catch {}
@@ -56,7 +66,7 @@
   function wantedView() {
     const hash = location.hash.replace('#', '');
     const f = figure();
-    if (hash === 'collection' || !f) return 'collection';
+    if (DESKTOP || hash === 'collection' || !f) return 'collection';
     if (hash === 'listen' && isUnlocked(f.id)) return 'player';
     return 'camera';
   }
@@ -340,6 +350,10 @@
     $('coll-count').textContent = `${n} / ${figures.length} found`;
 
     grid.innerHTML = '';
+    grid.classList.toggle('hidden', DESKTOP);
+    $('coll-desktop')?.classList.toggle('hidden', !DESKTOP);
+    document.querySelector('.coll-foot')?.classList.toggle('hidden', DESKTOP);
+    if (DESKTOP) { $('coll-back').classList.add('hidden'); return; }
     const found = figures
       .map((f, i) => ({ f, no: i + 1 }))
       .filter(({ f }) => isUnlocked(f.id));
