@@ -31,6 +31,7 @@ html, body {
   overflow-x: clip;
   /* app-like: no pinch / double-tap zoom, only vertical scrolling */
   touch-action: pan-y;
+  overscroll-behavior: none;
 }
 body { min-height: 100svh; }
 a, button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
@@ -79,10 +80,6 @@ button:disabled { cursor: default; opacity: .35; }
   display: flex; align-items: center; justify-content: space-between;
   padding: calc(16px + var(--safe-top)) var(--margin) 16px;
   border-bottom: 1px solid var(--ink);
-}
-.masthead--sticky {
-  position: sticky; top: 0; z-index: 10;
-  background: var(--paper);
 }
 .masthead__end { display: flex; align-items: center; gap: 16px; }
 .masthead__brand {
@@ -157,8 +154,15 @@ button:disabled { cursor: default; opacity: .35; }
 .cam-start p { margin: 0 0 16px; }
 
 /* ============ PLAYER ============ */
-.view--player { min-height: 100dvh; display: flex; flex-direction: column; }
+.view--player, .view--collection {
+  position: fixed; inset: 0;            /* exactly one screen, never scrolls as a page */
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  background: var(--paper);
+}
+.view--player .masthead, .view--collection .masthead { flex: none; }
 .flash {
+  position: absolute; left: 0; right: 0; top: 0; z-index: 5;
   background: var(--ink); color: var(--paper);
   padding: 12px var(--margin);
   animation: flash-in .25s ease-out;
@@ -168,13 +172,15 @@ button:disabled { cursor: default; opacity: .35; }
 .player-stage {
   flex: 1;
   display: flex; align-items: center; justify-content: center;
-  padding: 32px var(--margin);
-  min-height: 40vh;
+  padding: 24px var(--margin);
+  min-height: 0;                        /* drawing shrinks to whatever space is left */
+  position: relative;
 }
-.player-stage__img { width: 100%; max-width: 520px; max-height: 52vh; object-fit: contain; }
+.player-stage__img { width: 100%; height: 100%; max-width: 520px; object-fit: contain; }
 
 .player-meta {
-  padding: 24px var(--margin) 0;
+  flex: none;
+  padding: 20px var(--margin) 0;
   border-top: 1px solid var(--ink);
 }
 .player-meta__title {
@@ -185,7 +191,7 @@ button:disabled { cursor: default; opacity: .35; }
 }
 .player-meta__sub { margin: 12px 0 0; color: var(--ink-mute); }
 
-.player { padding: 24px var(--margin) calc(32px + var(--safe-bottom)); }
+.player { flex: none; padding: 20px var(--margin) calc(24px + var(--safe-bottom)); }
 .player__progress { display: flex; align-items: center; gap: 12px; }
 .player__time { font: 600 12px/1 var(--font-body); font-variant-numeric: tabular-nums; min-width: 34px; }
 .player__time:last-child { text-align: right; }
@@ -213,6 +219,11 @@ button:disabled { cursor: default; opacity: .35; }
 .player__seek::-moz-range-thumb { width: 12px; height: 12px; background: var(--ink); border: 0; border-radius: 0; }
 
 /* ============ COLLECTION ============ */
+.coll-scroll {
+  flex: 1; min-height: 0;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;          /* the title bar never moves, only the cards scroll */
+}
 .coll-grid {
   list-style: none; margin: 0; padding: 0;
   display: grid; grid-template-columns: repeat(2, 1fr);
