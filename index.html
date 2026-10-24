@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
-  <title>Berlin Kvetch</title>
+  <title>berlin Kvetch</title>
   <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png" />
@@ -21,7 +21,7 @@
 
     <header class="cam-bar">
       <div class="cam-bar__title">
-        <span class="label-caps">Berlin Kvetch</span>
+        <span class="brand-small">berlin <b>Kvetch</b></span>
         <span id="cam-figure-title" class="cam-bar__name"></span>
       </div>
       <button class="icon-btn icon-btn--light" data-go="collection" aria-label="Collection">
@@ -50,7 +50,7 @@
   <!-- ============ PLAYER ============ -->
   <section id="view-player" class="view view--player hidden" aria-label="Player">
     <header class="masthead">
-      <span class="masthead__brand">Berlin Kvetch</span>
+      <span class="masthead__brand">berlin <b>Kvetch</b></span>
       <button class="icon-btn" data-go="collection" aria-label="Collection">
         <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>
       </button>
@@ -92,17 +92,15 @@
 
   <!-- ============ COLLECTION (the only other screen) ============ -->
   <section id="view-collection" class="view view--collection hidden" aria-label="Collection">
-    <header class="masthead">
-      <span class="masthead__brand">Berlin Kvetch</span>
-      <button id="coll-back" class="icon-btn hidden" aria-label="Back">
-        <span class="material-symbols-outlined" aria-hidden="true">close</span>
-      </button>
+    <header class="masthead masthead--sticky">
+      <h1 class="masthead__brand">berlin <b>Kvetch</b></h1>
+      <span class="masthead__end">
+        <span id="coll-count" class="label-caps"></span>
+        <button id="coll-back" class="icon-btn hidden" aria-label="Back">
+          <span class="material-symbols-outlined" aria-hidden="true">close</span>
+        </button>
+      </span>
     </header>
-
-    <div class="coll-head">
-      <h1 class="coll-head__title">Collection</h1>
-      <span id="coll-count" class="label-caps"></span>
-    </div>
 
     <ul id="coll-grid" class="coll-grid"></ul>
 
