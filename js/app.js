@@ -268,67 +268,56 @@
     navigate(null, 'listen');
   }
 
-  // ---------- Player ----------
+  // ---------- Player (hold "Kvetch" to play, release to pause) ----------
   const audio = $('audio');
-  const seek = $('seek');
-  const fmt = (t) => {
-    if (!isFinite(t) || t < 0) t = 0;
-    return Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
-  };
-  let scrubbing = false;
-  function syncSeek() {
-    if (scrubbing || !isFinite(audio.duration) || audio.duration <= 0) return;
-    const pct = (audio.currentTime / audio.duration) * 100;
-    seek.value = pct;
-    seek.style.setProperty('--progress', pct + '%');
-  }
-  function setPlaying(on) {
-    $('icon-play').classList.toggle('hidden', on);
-    $('icon-pause').classList.toggle('hidden', !on);
-    $('play-pause').setAttribute('aria-label', on ? 'Pause' : 'Play');
+  const track = document.querySelector('.player__track');
+  const kvetch = $('kvetch');
+  function syncProgress() {
+    const pct = isFinite(audio.duration) && audio.duration > 0 ? (audio.currentTime / audio.duration) * 100 : 0;
+    track.style.setProperty('--progress', pct + '%');
   }
   function setAudioAvailable(ok) {
     document.querySelector('.player').classList.toggle('player--empty', !ok);
     $('audio-missing').classList.toggle('hidden', ok);
-    ['play-pause', 'back-10', 'fwd-10', 'seek'].forEach((id) => { $(id).disabled = !ok; });
+    kvetch.disabled = !ok;
   }
+  let kvetching = false;
+  function press(e) {
+    if (kvetch.disabled) return;
+    if (e && e.pointerId != null) { e.preventDefault(); try { kvetch.setPointerCapture(e.pointerId); } catch (_) {} }
+    kvetching = true;
+    kvetch.classList.add('is-pressed');
+    audio.play().catch(() => {});
+  }
+  function release() {
+    if (!kvetching) return;
+    kvetching = false;
+    kvetch.classList.remove('is-pressed');
+    audio.pause();
+  }
+  kvetch.addEventListener('pointerdown', press);
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => kvetch.addEventListener(ev, release));
+  kvetch.addEventListener('contextmenu', (e) => e.preventDefault());
+  kvetch.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); press(); } });
+  kvetch.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') release(); });
+  window.addEventListener('blur', release);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) release(); });
 
-  $('play-pause').addEventListener('click', () => { audio.paused ? audio.play().catch(() => {}) : audio.pause(); });
-  $('back-10').addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 10); });
-  $('fwd-10').addEventListener('click', () => {
-    audio.currentTime = isFinite(audio.duration) ? Math.min(audio.duration, audio.currentTime + 10) : audio.currentTime + 10;
-  });
-  seek.addEventListener('pointerdown', () => { scrubbing = true; });
-  seek.addEventListener('input', () => {
-    seek.style.setProperty('--progress', seek.value + '%');
-    if (isFinite(audio.duration)) $('t-cur').textContent = fmt((seek.value / 100) * audio.duration);
-  });
-  seek.addEventListener('change', () => {
-    if (isFinite(audio.duration)) audio.currentTime = (seek.value / 100) * audio.duration;
-    scrubbing = false;
-  });
-  audio.addEventListener('play', () => setPlaying(true));
-  audio.addEventListener('pause', () => setPlaying(false));
-  audio.addEventListener('ended', () => { setPlaying(false); audio.currentTime = 0; syncSeek(); });
-  audio.addEventListener('timeupdate', () => { $('t-cur').textContent = fmt(audio.currentTime); syncSeek(); });
-  audio.addEventListener('loadedmetadata', () => { $('t-tot').textContent = fmt(audio.duration); setAudioAvailable(true); });
+  audio.addEventListener('ended', () => { audio.currentTime = 0; syncProgress(); });
+  audio.addEventListener('timeupdate', syncProgress);
+  audio.addEventListener('loadedmetadata', () => { syncProgress(); setAudioAvailable(true); });
   audio.addEventListener('error', () => { if (audio.getAttribute('src')) setAudioAvailable(false); });
 
   function enterPlayer() {
     const f = figure();
     $('player-title').textContent = f.title;
-    $('player-subtitle').textContent = [f.subtitle, f.location && f.location.name].filter(Boolean).join(' · ');
     $('player-drawing').src = f.drawing ? encodeURI(f.drawing) : '';
     $('player-drawing').alt = f.title;
 
     const src = f.audio ? encodeURI(f.audio) : '';
     if (audio.getAttribute('src') !== src) {
       audio.pause();
-      $('t-cur').textContent = '0:00';
-      $('t-tot').textContent = '0:00';
-      seek.value = 0;
-      seek.style.setProperty('--progress', '0%');
-      setPlaying(false);
+      track.style.setProperty('--progress', '0%');
       if (src) { audio.setAttribute('src', src); audio.load(); setAudioAvailable(true); }
       else { audio.removeAttribute('src'); setAudioAvailable(false); }
     }
@@ -338,7 +327,6 @@
     if (justUnlocked) {
       justUnlocked = false;
       setTimeout(() => flash.classList.add('hidden'), 2400);
-      if (src) audio.play().catch(() => {}); // may be blocked without a tap — the play button is right there
     }
   }
 

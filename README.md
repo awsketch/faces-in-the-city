@@ -38,6 +38,32 @@ into `photos/` of `figures/<figure>/`, then run `node tools/build.mjs` or `./pus
 | `/?f=worm-man#listen` | player (only if already unlocked) |
 | `/#collection` | collection |
 
+## QR codes
+
+Each QR code encodes one plain link, `https://berlin-kvetch.chismes.de/?f=<figure-folder>`:
+
+| Figure | QR link |
+|---|---|
+| Piano Face | `https://berlin-kvetch.chismes.de/?f=piano-face` |
+| Worm Man | `https://berlin-kvetch.chismes.de/?f=worm-man` |
+| Moaning Viking | `https://berlin-kvetch.chismes.de/?f=moaning-viking` |
+
+A new figure gets `?f=` + its folder name in `figures/`.
+
+**How they are made:** `cards.html` draws them in the browser with the
+open-source JavaScript library **qrcode-generator 1.4.4** (Kazuhiko Arase,
+loaded from cdn.jsdelivr.net), error correction level **M**, output as SVG.
+No external QR service, no tracking or redirect: the link is in the code itself,
+so printed cards keep working as long as the domain and folder names stay the same.
+
+**To make them again:**
+1. Run `./push.sh` (or `Push to website.command`) so the live site is current.
+2. Open `https://berlin-kvetch.chismes.de/cards.html`.
+3. Check the "App address" field at the top reads `https://berlin-kvetch.chismes.de/`
+   (not `localhost`); if not, fix it and click "Update codes".
+4. Print, or copy a link from the table above into any other QR generator
+   (any generator works, since the code only contains the plain link).
+
 ## Making the cards
 
 Open `cards.html` on the deployed site, check the app address at the top,
