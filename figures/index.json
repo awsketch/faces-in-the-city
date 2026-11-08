@@ -61,6 +61,24 @@
       ],
       "animation": [],
       "fps": 8
+    },
+    {
+      "id": "rosa-needs-sun",
+      "title": "Rosa Needs Sun",
+      "subtitle": "",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": "figures/rosa-needs-sun/drawing/rosa1 Kopie.png",
+      "audio": "figures/rosa-needs-sun/audio/Rosa needs sun.m4a",
+      "photos": [],
+      "animation": [
+        "figures/rosa-needs-sun/animation/rosa1.png",
+        "figures/rosa-needs-sun/animation/rosa2.png"
+      ],
+      "fps": 8
     }
   ]
 }
