@@ -21,7 +21,9 @@
         "figures/piano-face/photos/_web/piano face 1.jpg",
         "figures/piano-face/photos/_web/piano face 3.jpg",
         "figures/piano-face/photos/_web/piano face 4.jpg"
-      ]
+      ],
+      "animation": [],
+      "fps": 8
     },
     {
       "id": "worm-man",
@@ -32,11 +34,16 @@
         "lat": null,
         "lng": null
       },
-      "drawing": "figures/worm-man/drawing/worm man drawing.png",
+      "drawing": "figures/worm-man/drawing/wormman1.png",
       "audio": "figures/worm-man/audio/Worm Man complaint test.m4a",
       "photos": [
         "figures/worm-man/photos/_web/PHOTO-2026-10-21-17-14-35.jpg"
-      ]
+      ],
+      "animation": [
+        "figures/worm-man/animation/01.png",
+        "figures/worm-man/animation/02.png"
+      ],
+      "fps": 8
     },
     {
       "id": "moaning-viking",
@@ -51,7 +58,9 @@
       "audio": null,
       "photos": [
         "figures/moaning-viking/photos/_web/PHOTO-2026-10-21-17-16-32.jpg"
-      ]
+      ],
+      "animation": [],
+      "fps": 8
     }
   ]
 }

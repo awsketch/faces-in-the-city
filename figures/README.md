@@ -10,7 +10,10 @@ figures/
     ├── meta.json      ← title, subtitle, location (lat/lng → map on the card), order
     ├── drawing/       ← the cartoon (any name; PNG with transparency or SVG)
     ├── audio/         ← the sound (any name; mp3 / m4a)
-    └── photos/        ← photos of the object the drawing overlays
+    ├── photos/        ← photos of the object the drawing overlays
+    └── animation/     ← optional: numbered frames 01.png, 02.png, … — played like a gif
+                         while the audio plays, back on 01 when it stops. 01 = the drawing.
+                         Speed: "fps" in meta.json (default 8 frames per second)
 ```
 
 After adding or changing files: `node tools/build.mjs` (push.sh does it

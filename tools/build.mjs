@@ -7,7 +7,9 @@
 //   - the drawing   : the image file at the top of the folder (svg/png/jpg/webp/heic)
 //   - the audio     : the audio file at the top of the folder (mp3/m4a/aac/wav/ogg)
 //   - the photos    : every image inside photos/
-//   - meta.json     : optional — title, subtitle, location {name, lat, lng}, order
+//   - the animation : numbered frames inside animation/ (01.png, 02.png, …),
+//                     played like a gif while the audio plays; 01 = the drawing
+//   - meta.json     : optional — title, subtitle, location {name, lat, lng}, order, fps
 //
 // Photos are shrunk to small JPGs in photos/_web/ (the matcher only needs
 // ~224px; full phone photos would make the page download tens of MB at the
@@ -126,6 +128,18 @@ function buildFigure(id) {
   }
   if (photos.length === 0) warn(id, 'no photos in photos/ yet — camera matching cannot work without them');
 
+  // Animation frames — numbered images in animation/, in number order
+  const animDir = path.join(dir, 'animation');
+  let animation = [];
+  if (fs.existsSync(animDir)) {
+    animation = fs.readdirSync(animDir).filter(visible)
+      .filter((f) => IMG.includes(ext(f)) && !RASTER_NEEDS_CONVERT.includes(ext(f)))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+      .map((f) => rel(path.join(animDir, f)));
+    if (fs.readdirSync(animDir).some((f) => ext(f) === '.heic')) warn(id, 'HEIC frames in animation/ are skipped — export them as PNG');
+  }
+  const fps = typeof meta.fps === 'number' && meta.fps > 0 ? meta.fps : 8;
+
   const loc = meta.location || {};
   return {
     id,
@@ -140,6 +154,8 @@ function buildFigure(id) {
     drawing,
     audio,
     photos,
+    animation,
+    fps,
   };
 }
 
@@ -151,7 +167,7 @@ const figures = ids.map(buildFigure)
   .map(({ order, ...f }) => f);
 
 for (const f of figures) {
-  console.log(`  ✓ ${f.id}: drawing ${f.drawing ? 'yes' : 'NO'}, audio ${f.audio ? 'yes' : 'NO'}, ${f.photos.length} photos`);
+  console.log(`  ✓ ${f.id}: drawing ${f.drawing ? 'yes' : 'NO'}, audio ${f.audio ? 'yes' : 'NO'}, ${f.photos.length} photos, ${f.animation.length} animation frames`);
 }
 
 fs.writeFileSync(path.join(FIG_DIR, 'index.json'), JSON.stringify({ figures }, null, 2) + '\n');

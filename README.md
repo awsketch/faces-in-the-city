@@ -6,6 +6,8 @@ transparent card with the drawing, a tiny map and a QR code:
 1. The map on the card leads to the spot; the drawing on the card shows what to look for.
 2. Scanning the QR code opens the app **straight into the camera**, with the drawing as overlay.
 3. When the camera frame matches the reference photos of the object, the sound player opens.
+   The figure only talks while the round **Kvetch** button is held: press = play (and the
+   figure animates), release = pause (and the figure freezes on its drawing).
 4. The only other screen is the **collection** (reachable from camera and player): which figures are unlocked.
 
 Static site — HTML / CSS / JS, no framework. Unlocks are remembered per browser.
@@ -27,8 +29,25 @@ figures/          ONE FOLDER PER FIGURE — see figures/README.md
 
 ## Adding content
 
-Drop the drawing into `drawing/`, the audio into `audio/` and the photos
-into `photos/` of `figures/<figure>/`, then run `node tools/build.mjs` or `./push.sh`.
+Everything for a figure goes into its own folder, `figures/<figure>/`:
+
+| Folder | What goes in | Notes |
+|---|---|---|
+| `drawing/` | the cartoon | one file; PNG with transparent background or SVG |
+| `audio/` | the sound | one file; mp3 or m4a |
+| `photos/` | photos of the object | 6–10 from the card's spot, different light/weather; HEIC is fine |
+| `animation/` | numbered frames `01.png`, `02.png`, … | optional; see below |
+| `meta.json` | title, subtitle, location, order, `fps` | |
+
+**Animation:** the frames play in number order, looping like a gif, only while
+the Kvetch button is held and the audio plays. When it stops, the figure rests on
+the drawing. `01.png` must be identical to the drawing. Speed is 8 frames per
+second; set e.g. `"fps": 12` in `meta.json` to change it per figure. Without
+frames (or with just one) the drawing simply stays still.
+
+Then run `./push.sh` (or double-click `Push to website.command`). It runs
+`node tools/build.mjs`, which lists per figure what it found (drawing, audio,
+photos, animation frames), and publishes.
 
 ## URLs
 

@@ -303,6 +303,32 @@
   window.addEventListener('blur', release);
   document.addEventListener('visibilitychange', () => { if (document.hidden) release(); });
 
+  // Animation: cycles the numbered frames while audio plays, rests on frame 01 (= the drawing) otherwise
+  const drawingEl = $('player-drawing');
+  let frames = [], restSrc = '', frameIdx = 0, frameTimer = null, frameMs = 125;
+  function setFrames(f) {
+    stopAnimation();
+    frames = (f.animation || []).map((u) => encodeURI(u));
+    frameMs = 1000 / (f.fps || 8);
+    restSrc = f.drawing ? encodeURI(f.drawing) : (frames[0] || '');
+    frames.forEach((u) => { const i = new Image(); i.src = u; }); // preload so frames don't flicker
+    drawingEl.src = restSrc;
+  }
+  function startAnimation() {
+    if (frames.length < 2 || frameTimer) return;
+    frameIdx = 0;
+    frameTimer = setInterval(() => {
+      frameIdx = (frameIdx + 1) % frames.length;
+      drawingEl.src = frames[frameIdx];
+    }, frameMs);
+  }
+  function stopAnimation() {
+    clearInterval(frameTimer); frameTimer = null;
+    if (restSrc) drawingEl.src = restSrc;
+  }
+  audio.addEventListener('playing', startAnimation);
+  ['pause', 'ended', 'waiting', 'emptied'].forEach((ev) => audio.addEventListener(ev, stopAnimation));
+
   audio.addEventListener('ended', () => { audio.currentTime = 0; syncProgress(); });
   audio.addEventListener('timeupdate', syncProgress);
   audio.addEventListener('loadedmetadata', () => { syncProgress(); setAudioAvailable(true); });
@@ -311,7 +337,7 @@
   function enterPlayer() {
     const f = figure();
     $('player-title').textContent = f.title;
-    $('player-drawing').src = f.drawing ? encodeURI(f.drawing) : '';
+    setFrames(f);
     $('player-drawing').alt = f.title;
 
     const src = f.audio ? encodeURI(f.audio) : '';
