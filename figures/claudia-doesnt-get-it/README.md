@@ -1,7 +1,7 @@
-# Moaning Viking — drop files here
+# Claudia Doesn't Get It — drop files here
 
 ```
-moaning-viking/
+claudia-doesnt-get-it/
 ├── meta.json    ← title, subtitle, location (lat/lng for the map on the card)
 ├── drawing/     ← the cartoon: PNG with transparent background or SVG works best
 ├── audio/       ← the sound: mp3 or m4a

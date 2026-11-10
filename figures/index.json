@@ -46,23 +46,6 @@
       "fps": 8
     },
     {
-      "id": "moaning-viking",
-      "title": "Moaning Viking",
-      "subtitle": "",
-      "location": {
-        "name": "Berlin",
-        "lat": null,
-        "lng": null
-      },
-      "drawing": "figures/moaning-viking/drawing/girl drawing.png",
-      "audio": null,
-      "photos": [
-        "figures/moaning-viking/photos/_web/PHOTO-2026-10-21-17-16-32.jpg"
-      ],
-      "animation": [],
-      "fps": 8
-    },
-    {
       "id": "rosa-needs-sun",
       "title": "Rosa Needs Sun",
       "subtitle": "",
@@ -77,6 +60,24 @@
       "animation": [
         "figures/rosa-needs-sun/animation/rosa1.png",
         "figures/rosa-needs-sun/animation/rosa2.png"
+      ],
+      "fps": 8
+    },
+    {
+      "id": "claudia-doesnt-get-it",
+      "title": "Claudia Doesn't Get It",
+      "subtitle": "",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": "figures/claudia-doesnt-get-it/drawing/Claudia1.png",
+      "audio": null,
+      "photos": [],
+      "animation": [
+        "figures/claudia-doesnt-get-it/animation/Claudia1.png",
+        "figures/claudia-doesnt-get-it/animation/Claudia2.png"
       ],
       "fps": 8
     }
