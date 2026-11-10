@@ -41,8 +41,8 @@ Everything for a figure goes into its own folder, `figures/<figure>/`:
 
 **Animation:** the frames play in number order, looping like a gif, only while
 the Kvetch button is held and the audio plays. When it stops, the figure rests on
-the drawing. `01.png` must be identical to the drawing. Speed is 8 frames per
-second; set e.g. `"fps": 12` in `meta.json` to change it per figure. Without
+the drawing. `01.png` must be identical to the drawing. Speed is 3 frames per
+second; set e.g. `"fps": 4` in `meta.json` to change it per figure. Without
 frames (or with just one) the drawing simply stays still.
 
 Then run `./push.sh` (or double-click `Push to website.command`). It runs

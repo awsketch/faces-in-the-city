@@ -138,7 +138,7 @@ function buildFigure(id) {
       .map((f) => rel(path.join(animDir, f)));
     if (fs.readdirSync(animDir).some((f) => ext(f) === '.heic')) warn(id, 'HEIC frames in animation/ are skipped — export them as PNG');
   }
-  const fps = typeof meta.fps === 'number' && meta.fps > 0 ? meta.fps : 8;
+  const fps = typeof meta.fps === 'number' && meta.fps > 0 ? meta.fps : 3;
 
   const loc = meta.location || {};
   return {
