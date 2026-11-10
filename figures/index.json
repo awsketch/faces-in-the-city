@@ -80,6 +80,99 @@
         "figures/claudia-doesnt-get-it/animation/Claudia2.png"
       ],
       "fps": 8
+    },
+    {
+      "id": "cunty-little-sphynx",
+      "title": "Cunty Little Sphynx",
+      "subtitle": "",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": null,
+      "audio": null,
+      "photos": [],
+      "animation": [],
+      "fps": 8
+    },
+    {
+      "id": "cunty-sphynx",
+      "title": "Cunty Sphynx",
+      "subtitle": "",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": null,
+      "audio": null,
+      "photos": [],
+      "animation": [],
+      "fps": 8
+    },
+    {
+      "id": "fritz-the-disappointed-optimist",
+      "title": "Fritz the Disappointed Optimist",
+      "subtitle": "",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": null,
+      "audio": null,
+      "photos": [],
+      "animation": [],
+      "fps": 8
+    },
+    {
+      "id": "kevin-the-imp",
+      "title": "Kevin the Imp",
+      "subtitle": "",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": null,
+      "audio": null,
+      "photos": [],
+      "animation": [],
+      "fps": 8
+    },
+    {
+      "id": "klaus-the-rules-guy",
+      "title": "Klaus the Rules Guy",
+      "subtitle": "",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": "figures/klaus-the-rules-guy/drawing/Klaus1.png",
+      "audio": "figures/klaus-the-rules-guy/audio/klaus.m4a",
+      "photos": [],
+      "animation": [
+        "figures/klaus-the-rules-guy/animation/Klaus1.png",
+        "figures/klaus-the-rules-guy/animation/Klaus2.png"
+      ],
+      "fps": 8
+    },
+    {
+      "id": "worm-orgy",
+      "title": "Worm Orgy",
+      "subtitle": "",
+      "location": {
+        "name": "Berlin",
+        "lat": null,
+        "lng": null
+      },
+      "drawing": null,
+      "audio": null,
+      "photos": [],
+      "animation": [],
+      "fps": 8
     }
   ]
 }

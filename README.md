@@ -65,7 +65,14 @@ Each QR code encodes one plain link, `https://berlin-kvetch.chismes.de/?f=<figur
 |---|---|
 | Piano Face | `https://berlin-kvetch.chismes.de/?f=piano-face` |
 | Worm Man | `https://berlin-kvetch.chismes.de/?f=worm-man` |
-| Moaning Viking | `https://berlin-kvetch.chismes.de/?f=moaning-viking` |
+| Rosa Needs Sun | `https://berlin-kvetch.chismes.de/?f=rosa-needs-sun` |
+| Claudia Doesn't Get It | `https://berlin-kvetch.chismes.de/?f=claudia-doesnt-get-it` |
+| Cunty Little Sphynx | `https://berlin-kvetch.chismes.de/?f=cunty-little-sphynx` |
+| Cunty Sphynx | `https://berlin-kvetch.chismes.de/?f=cunty-sphynx` |
+| Fritz the Disappointed Optimist | `https://berlin-kvetch.chismes.de/?f=fritz-the-disappointed-optimist` |
+| Kevin the Imp | `https://berlin-kvetch.chismes.de/?f=kevin-the-imp` |
+| Klaus the Rules Guy | `https://berlin-kvetch.chismes.de/?f=klaus-the-rules-guy` |
+| Worm Orgy | `https://berlin-kvetch.chismes.de/?f=worm-orgy` |
 
 A new figure gets `?f=` + its folder name in `figures/`.
 
