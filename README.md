@@ -37,7 +37,7 @@ Everything for a figure goes into its own folder, `figures/<figure>/`:
 | `audio/` | the sound | one file; mp3 or m4a |
 | `photos/` | photos of the object | 6–10 from the card's spot, different light/weather; HEIC is fine |
 | `animation/` | numbered frames `01.png`, `02.png`, … | optional; see below |
-| `meta.json` | title, subtitle, location, order, `fps` | |
+| `meta.json` | title, subtitle, location, order, `fps`, `scale` (e.g. `1.25` = drawing 25% bigger on player and camera) | |
 
 **Animation:** the frames play in number order, looping like a gif, only while
 the Kvetch button is held and the audio plays. When it stops, the figure rests on

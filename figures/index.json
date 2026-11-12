@@ -23,7 +23,8 @@
         "figures/piano-face/photos/_web/piano face 4.jpg"
       ],
       "animation": [],
-      "fps": 3
+      "fps": 3,
+      "scale": 1
     },
     {
       "id": "worm-man",
@@ -43,7 +44,8 @@
         "figures/worm-man/animation/01.png",
         "figures/worm-man/animation/02.png"
       ],
-      "fps": 3
+      "fps": 3,
+      "scale": 1
     },
     {
       "id": "rosa-needs-sun",
@@ -61,7 +63,8 @@
         "figures/rosa-needs-sun/animation/rosa1.png",
         "figures/rosa-needs-sun/animation/rosa2.png"
       ],
-      "fps": 3
+      "fps": 3,
+      "scale": 1
     },
     {
       "id": "claudia-doesnt-get-it",
@@ -79,7 +82,8 @@
         "figures/claudia-doesnt-get-it/animation/Claudia1.png",
         "figures/claudia-doesnt-get-it/animation/Claudia2.png"
       ],
-      "fps": 3
+      "fps": 3,
+      "scale": 1.25
     },
     {
       "id": "cunty-little-sphynx",
@@ -94,7 +98,8 @@
       "audio": null,
       "photos": [],
       "animation": [],
-      "fps": 3
+      "fps": 3,
+      "scale": 1
     },
     {
       "id": "cunty-sphynx",
@@ -109,7 +114,8 @@
       "audio": null,
       "photos": [],
       "animation": [],
-      "fps": 3
+      "fps": 3,
+      "scale": 1
     },
     {
       "id": "fritz-the-disappointed-optimist",
@@ -124,7 +130,8 @@
       "audio": null,
       "photos": [],
       "animation": [],
-      "fps": 3
+      "fps": 3,
+      "scale": 1
     },
     {
       "id": "kevin-the-imp",
@@ -139,7 +146,8 @@
       "audio": null,
       "photos": [],
       "animation": [],
-      "fps": 3
+      "fps": 3,
+      "scale": 1
     },
     {
       "id": "klaus-the-rules-guy",
@@ -157,7 +165,8 @@
         "figures/klaus-the-rules-guy/animation/Klaus1.png",
         "figures/klaus-the-rules-guy/animation/Klaus2.png"
       ],
-      "fps": 4
+      "fps": 4,
+      "scale": 1.25
     },
     {
       "id": "worm-orgy",
@@ -172,7 +181,8 @@
       "audio": null,
       "photos": [],
       "animation": [],
-      "fps": 3
+      "fps": 3,
+      "scale": 1
     }
   ]
 }

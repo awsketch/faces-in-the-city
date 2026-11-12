@@ -107,6 +107,7 @@
   async function enterCamera() {
     const f = figure();
     $('cam-figure-title').textContent = f.title;
+    overlay.style.setProperty('--fig-scale', f.scale || 1);
     overlay.removeAttribute('src');
     overlay.classList.add('hidden');
     if (f.drawing) {
@@ -281,11 +282,29 @@
     $('audio-missing').classList.toggle('hidden', ok);
     kvetch.disabled = !ok;
   }
+  // Short haptic tick on press. Android: Vibration API. iPhone (iOS 18+): Safari has no
+  // vibration API, but toggling a native <input switch> gives a system tick, so a hidden one is flipped.
+  const hapticLabel = (() => {
+    const l = document.createElement('label');
+    l.setAttribute('aria-hidden', 'true');
+    l.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;';
+    const i = document.createElement('input');
+    i.type = 'checkbox'; i.setAttribute('switch', ''); i.tabIndex = -1;
+    l.appendChild(i); document.body.appendChild(l);
+    return l;
+  })();
+  function haptic() {
+    try {
+      if (typeof navigator.vibrate === 'function' && navigator.vibrate(12)) return;
+      hapticLabel.click();
+    } catch (_) {}
+  }
   let kvetching = false;
   function press(e) {
     if (kvetch.disabled) return;
     if (e && e.pointerId != null) { e.preventDefault(); try { kvetch.setPointerCapture(e.pointerId); } catch (_) {} }
     kvetching = true;
+    haptic();
     kvetch.classList.add('is-pressed');
     audio.play().catch(() => {});
   }
@@ -312,6 +331,7 @@
     frameMs = 1000 / (f.fps || 3);
     restSrc = f.drawing ? encodeURI(f.drawing) : (frames[0] || '');
     frames.forEach((u) => { const i = new Image(); i.src = u; }); // preload so frames don't flicker
+    drawingEl.style.setProperty('--fig-scale', f.scale || 1); // drawing and frames share one element, so they always match
     drawingEl.src = restSrc;
   }
   function startAnimation() {

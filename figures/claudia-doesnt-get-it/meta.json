@@ -2,5 +2,6 @@
   "title": "Claudia Doesn't Get It",
   "subtitle": "",
   "location": { "name": "Berlin", "lat": null, "lng": null },
-  "order": 6
+  "order": 6,
+  "scale": 1.25
 }

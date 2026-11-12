@@ -111,6 +111,7 @@ button:disabled { cursor: default; opacity: .35; }
   opacity: .85;
   /* white halo keeps black line-art legible over dark parts of the scene */
   filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px #fff);
+  transform: scale(var(--fig-scale, 1)); transform-origin: center;
 }
 .cam-bar {
   position: absolute; left: 0; right: 0; top: 0;
@@ -176,7 +177,8 @@ button:disabled { cursor: default; opacity: .35; }
   min-height: 0;                        /* drawing shrinks to whatever space is left */
   position: relative;
 }
-.player-stage__img { width: 100%; height: 100%; max-width: 520px; object-fit: contain; }
+.player-stage__img { width: 100%; height: 100%; max-width: 520px; object-fit: contain;
+  transform: scale(var(--fig-scale, 1)); transform-origin: center; }   /* per-figure size: "scale" in meta.json */
 
 .player-meta {
   flex: none;

@@ -9,7 +9,7 @@
 //   - the photos    : every image inside photos/
 //   - the animation : numbered frames inside animation/ (01.png, 02.png, …),
 //                     played like a gif while the audio plays; 01 = the drawing
-//   - meta.json     : optional — title, subtitle, location {name, lat, lng}, order, fps
+//   - meta.json     : optional — title, subtitle, location {name, lat, lng}, order, fps, scale
 //
 // Photos are shrunk to small JPGs in photos/_web/ (the matcher only needs
 // ~224px; full phone photos would make the page download tens of MB at the
@@ -139,6 +139,7 @@ function buildFigure(id) {
     if (fs.readdirSync(animDir).some((f) => ext(f) === '.heic')) warn(id, 'HEIC frames in animation/ are skipped — export them as PNG');
   }
   const fps = typeof meta.fps === 'number' && meta.fps > 0 ? meta.fps : 3;
+  const scale = typeof meta.scale === 'number' && meta.scale > 0 ? meta.scale : 1;
 
   const loc = meta.location || {};
   return {
@@ -156,6 +157,7 @@ function buildFigure(id) {
     photos,
     animation,
     fps,
+    scale,
   };
 }
 
