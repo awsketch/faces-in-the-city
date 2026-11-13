@@ -73,6 +73,7 @@ Each QR code encodes one plain link, `https://berlin-kvetch.chismes.de/?f=<figur
 | Kevin the Imp | `https://berlin-kvetch.chismes.de/?f=kevin-the-imp` |
 | Klaus the Rules Guy | `https://berlin-kvetch.chismes.de/?f=klaus-the-rules-guy` |
 | Worm Orgy | `https://berlin-kvetch.chismes.de/?f=worm-orgy` |
+| Sad Lego (test figure) | `https://berlin-kvetch.chismes.de/?f=sad-lego` |
 
 A new figure gets `?f=` + its folder name in `figures/`.
 
@@ -124,14 +125,14 @@ The live app and the QR links are not affected.
 4. **Unlock** — 15+ inliers spread over at least 25 % of the match area, on two checks
    in a row → saved like a normal unlock, then the player opens (`./?f=<id>#listen`).
 
-### Match areas (`photos/areas.json`)
+### Match areas (`photos/<figure>-areas.json`)
 
 Open **`/tools/area.html`** (on the live site, or locally via `python3 -m http.server`),
 pick the figure, and tap around the main façade / object on each photo. "Use for all
 photos" applies one area to every photo — fine for AI variants of the same shot.
 "Show feature points" shows which points the matcher would use. Download the result as
-`areas.json` into `figures/<figure>/photos/`, then push. Without an `areas.json` the
-whole photo is used.
+`<figure>-areas.json` (e.g. `worm-man-areas.json`) into `figures/<figure>/photos/`, then push.
+A plain `areas.json` also works. Without an area file the whole photo is used.
 
 Only figures with photos in `photos/` can be found. More photos (different light, a few
 steps left/right) make matching more reliable; one photo only works close to where it was taken.

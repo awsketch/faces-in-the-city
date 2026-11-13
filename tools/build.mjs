@@ -7,8 +7,9 @@
 //   - the drawing   : the image file at the top of the folder (svg/png/jpg/webp/heic)
 //   - the audio     : the audio file at the top of the folder (mp3/m4a/aac/wav/ogg)
 //   - the photos    : every image inside photos/
-//   - photos/areas.json : optional — the match area per photo (the main façade /
+//   - photos/<id>-areas.json : optional — the match area per photo (the main façade /
 //                     object), drawn with tools/area.html; the camera only matches there
+//                     (a plain photos/areas.json works too)
 //   - the animation : numbered frames inside animation/ (01.png, 02.png, …),
 //                     played like a gif while the audio plays; 01 = the drawing
 //   - meta.json     : optional — title, subtitle, location {name, lat, lng}, order, fps, scale
@@ -130,13 +131,13 @@ function buildFigure(id) {
   }
   if (photos.length === 0) warn(id, 'no photos in photos/ yet — camera matching cannot work without them');
 
-  // Match areas — photos/areas.json: { "default": [[x,y],…], "<photo name>": [[x,y],…] }
+  // Match areas — photos/<id>-areas.json (or areas.json): { "default": [[x,y],…], "<photo name>": [[x,y],…] }
   // Points are fractions (0..1) of the photo's width/height; the photo name is
   // the file name without extension. Photos without an entry use "default",
   // or the whole photo if there is none.
   let areas = null;
-  const areasFile = path.join(photoDir, 'areas.json');
-  if (fs.existsSync(areasFile)) {
+  const areasFile = [path.join(photoDir, `${id}-areas.json`), path.join(photoDir, 'areas.json')].find((f) => fs.existsSync(f));
+  if (areasFile) {
     try {
       const raw = JSON.parse(fs.readFileSync(areasFile, 'utf8'));
       const ok = (p) => Array.isArray(p) && p.length >= 3 && p.every((q) => Array.isArray(q) && q.length === 2 && q.every((v) => typeof v === 'number'));
@@ -144,7 +145,7 @@ function buildFigure(id) {
       for (const [k, v] of Object.entries(raw)) if (ok(v)) byName[k.toLowerCase()] = v;
       areas = photos.map((ph) => byName[path.parse(ph).name.toLowerCase()] || byName.default || null);
       if (!areas.some(Boolean)) areas = null;
-    } catch (e) { warn(id, `photos/areas.json is not valid JSON (${e.message}) — matching uses whole photos`); }
+    } catch (e) { warn(id, `photos/${path.basename(areasFile)} is not valid JSON (${e.message}) — matching uses whole photos`); }
   }
 
   // Animation frames — numbered images in animation/, in number order

@@ -54,11 +54,11 @@
 
   <div class="stage"><canvas id="cv" width="640" height="480"></canvas></div>
 
-  <h2 class="label-caps" style="margin-top:24px">areas.json</h2>
-  <p>Save this as <code>figures/<span id="fid">…</span>/photos/areas.json</code> in the project folder, then push.</p>
+  <h2 class="label-caps" style="margin-top:24px">Area file</h2>
+  <p>Save this as <code>figures/<span id="fid">…</span>/photos/<span id="fname">areas.json</span></code> in the project folder, then push.</p>
   <textarea id="out" readonly></textarea>
   <div class="row">
-    <button id="download" class="btn btn--small">Download areas.json</button>
+    <button id="download" class="btn btn--small">Download area file</button>
     <button id="copy" class="btn btn--small">Copy</button>
   </div>
 
@@ -80,18 +80,23 @@
     const snapshot = () => { history.push(JSON.stringify(areas)); if (history.length > 100) history.shift(); };
     const nameOf = (url) => decodeURIComponent(url.split('/').pop()).replace(/\.[^.]+$/, '');
     const cur = () => nameOf(fig.photos[idx]);
+    const fileName = () => `${fig.id}-areas.json`;
     const ownPoly = () => areas[cur()];
     const shownPoly = () => areas[cur()] || areas.default || null;
 
     async function selectFigure(id) {
       fig = figures.find((f) => f.id === id);
       $('fid').textContent = fig.id;
+      $('fname').textContent = fileName();
       areas = {};
       history.length = 0;
-      try {
-        const r = await fetch(`../figures/${encodeURIComponent(fig.id)}/photos/areas.json`, { cache: 'no-cache' });
-        if (r.ok) areas = await r.json();
-      } catch {}
+      // figure-specific name first (<id>-areas.json), plain areas.json as fallback
+      for (const name of [fileName(), 'areas.json']) {
+        try {
+          const r = await fetch(`../figures/${encodeURIComponent(fig.id)}/photos/${encodeURIComponent(name)}`, { cache: 'no-cache' });
+          if (r.ok) { areas = await r.json(); break; }
+        } catch {}
+      }
       idx = 0;
       renderStrip();
       await showPhoto(0);
@@ -278,7 +283,7 @@
     $('download').onclick = () => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([$('out').value + '\n'], { type: 'application/json' }));
-      a.download = 'areas.json'; a.click();
+      a.download = fileName(); a.click();
     };
     $('copy').onclick = () => navigator.clipboard.writeText($('out').value).then(() => { $('status').textContent = 'Copied'; });
 
