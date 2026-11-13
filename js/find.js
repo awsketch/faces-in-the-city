@@ -4,21 +4,23 @@
 //      Figures without lat/lng in meta.json are always candidates (so the test
 //      also works before coordinates are entered). No GPS → all figures.
 //   2. Camera: every frame is matched against the reference photos of the
-//      candidates (Matcher: ORB feature points + RANSAC geometry check).
+//      candidates (Matcher: a few strong ORB feature points, taken only from
+//      each photo's match area = the main façade / object, + RANSAC geometry check).
 //   3. The best candidate's drawing fades in as the number of geometrically
 //      consistent matches ("inliers") rises from SHOW to UNLOCK.
-//   4. UNLOCK inliers on two checks in a row → unlocked (same store as the app),
-//      then on to the player: ./?f=<id>#listen
+//   4. UNLOCK inliers, spread over at least MIN_SPREAD of the match area, on two
+//      checks in a row → unlocked (same store as the app), then the player: ./?f=<id>#listen
 //
-// URL options for testing:  ?debug=1  ?unlock=25  ?show=8  ?radius=75  ?nogps=1
+// URL options for testing:  ?debug=1  ?unlock=15  ?show=5  ?spread=0.25  ?radius=75  ?nogps=1
 
 (async function () {
   const $ = (id) => document.getElementById(id);
   const q = new URLSearchParams(location.search);
   const num = (k, d) => (q.has(k) && isFinite(+q.get(k)) ? +q.get(k) : d);
 
-  const UNLOCK = num('unlock', 25);   // inliers needed to unlock (another photo of the same spot gives ~10–200, a wrong spot 0–4)
-  const SHOW = num('show', 8);        // inliers at which the drawing starts to appear
+  const UNLOCK = num('unlock', 15);   // inliers needed to unlock (other photos of the same spot: 27–103, a wrong spot: 0)
+  const SHOW = num('show', 5);        // inliers at which the drawing starts to appear
+  const MIN_SPREAD = num('spread', 0.25); // agreeing points must cover ≥ this share of the match area's width and height
   const RADIUS = num('radius', 75);   // metres
   const NO_GPS = q.has('nogps');
   const HITS_NEEDED = 2;              // consecutive checks at UNLOCK
@@ -137,14 +139,15 @@
     let leader = null;
     for (const r of results) {
       last[r.id] = r;
-      const raw = Math.max(0, Math.min(1, (r.inliers - SHOW) / Math.max(1, UNLOCK - SHOW)));
+      let raw = Math.max(0, Math.min(1, (r.inliers - SHOW) / Math.max(1, UNLOCK - SHOW)));
+      if (r.spread < MIN_SPREAD) raw = Math.min(raw, 0.6);   // matches bunched on one small detail: never a full match
       ema[r.id] = 0.55 * (ema[r.id] || 0) + 0.45 * raw;
       if (!leader || ema[r.id] > ema[leader.id]) leader = r;
     }
     for (const id of Object.keys(ema)) if (!cands.some((f) => f.id === id)) ema[id] = 0;
 
     const best = results.reduce((a, b) => (b.inliers > (a ? a.inliers : -1) ? b : a), null);
-    if (best && best.inliers >= UNLOCK) hits = { id: best.id, n: hits.id === best.id ? hits.n + 1 : 1 };
+    if (best && best.inliers >= UNLOCK && best.spread >= MIN_SPREAD) hits = { id: best.id, n: hits.id === best.id ? hits.n + 1 : 1 };
     else hits = { id: null, n: 0 };
 
     const score = leader ? ema[leader.id] : 0;
@@ -225,13 +228,13 @@
     if (!debugOn) return;
     const lines = [];
     lines.push(`GPS ${gps.status}` + (gps.status === 'ok' ? `  ${gps.lat.toFixed(6)}, ${gps.lng.toFixed(6)}  ±${Math.round(gps.acc)} m` : ''));
-    lines.push(`OpenCV ${cvState} · check ${tickMs} ms · unlock ≥${UNLOCK} · show ≥${SHOW} · radius ${RADIUS} m`);
+    lines.push(`OpenCV ${cvState} · check ${tickMs} ms · unlock ≥${UNLOCK} · show ≥${SHOW} · spread ≥${MIN_SPREAD} · radius ${RADIUS} m`);
     for (const f of figures) {
       const d = distance(f), c = isCandidate(f), r = last[f.id];
       lines.push(
         `${c ? '●' : '○'} ${f.title.padEnd(14).slice(0, 14)} ` +
         (d == null ? (f.location && f.location.lat != null ? '   ? m' : ' no GPS') : String(Math.round(d)).padStart(5) + ' m') +
-        (c && r ? `  inl ${String(r.inliers).padStart(3)} / good ${String(r.good).padStart(3)}  ${Math.round((ema[f.id] || 0) * 100)}%` : ''),
+        (c && r ? `  inl ${String(r.inliers).padStart(3)} / good ${String(r.good).padStart(3)} · spread ${Math.round((r.spread || 0) * 100)}%  ${Math.round((ema[f.id] || 0) * 100)}%` : ''),
       );
     }
     dbg.textContent = lines.join('\n');

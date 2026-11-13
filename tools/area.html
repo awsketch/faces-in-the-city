@@ -26,7 +26,9 @@
 </head>
 <body>
   <h1>berlin <b>Kvetch</b> · match areas</h1>
-  <p>Draw around the <b>main façade or object</b> on each reference photo: tap to add corners, drag a corner to move it.
+  <p>Draw around the <b>main façade or object</b> on each reference photo: tap to add corners, drag a corner to move it,
+     drag inside the shape to move the whole shape. On a photo that uses the shared area (dashed), just start dragging:
+     it becomes this photo's own copy.
      Leave out sky, trees, cars, people, shop windows and anything the AI may have invented in the background.
      The camera matching only uses feature points inside this area.</p>
 
@@ -41,7 +43,9 @@
   <div class="row">
     <button id="prev" class="btn btn--small">‹ Prev</button>
     <button id="next" class="btn btn--small">Next ›</button>
-    <button id="undo" class="btn btn--small">Undo corner</button>
+    <button id="undo" class="btn btn--small">Undo</button>
+    <button id="smaller" class="btn btn--small">Smaller</button>
+    <button id="bigger" class="btn btn--small">Bigger</button>
     <button id="clear" class="btn btn--small">Clear</button>
     <button id="all" class="btn btn--small">Use for all photos</button>
     <button id="points" class="btn btn--small">Show feature points</button>
@@ -70,7 +74,10 @@
     if (!figures.length) { $('status').textContent = 'No figure has photos yet'; return; }
     for (const f of figures) $('fig').add(new Option(f.title, f.id));
 
-    let fig = null, areas = {}, idx = 0, img = null, feature = null, drag = -1;
+    let fig = null, areas = {}, idx = 0, img = null, feature = null;
+    let drag = null;            // { kind: 'corner', i } | { kind: 'shape', start, orig }
+    const history = [];         // snapshots of `areas` for Undo
+    const snapshot = () => { history.push(JSON.stringify(areas)); if (history.length > 100) history.shift(); };
     const nameOf = (url) => decodeURIComponent(url.split('/').pop()).replace(/\.[^.]+$/, '');
     const cur = () => nameOf(fig.photos[idx]);
     const ownPoly = () => areas[cur()];
@@ -80,6 +87,7 @@
       fig = figures.find((f) => f.id === id);
       $('fid').textContent = fig.id;
       areas = {};
+      history.length = 0;
       try {
         const r = await fetch(`../figures/${encodeURIComponent(fig.id)}/photos/areas.json`, { cache: 'no-cache' });
         if (r.ok) areas = await r.json();
@@ -151,7 +159,7 @@
         ctx.beginPath(); ctx.arc(x * canvas.width, y * canvas.height, 3, 0, 7); ctx.fill(); ctx.stroke();
       }
       $('info').textContent =
-        (ownPoly() ? `Own area, ${ownPoly().length} corners.` : areas.default ? 'Uses the area set "for all photos" (dashed). Tap to draw an own one.' : 'No area yet: the whole photo is used.') +
+        (ownPoly() ? `Own area, ${ownPoly().length} corners.` : areas.default ? 'Uses the shared area (dashed). Drag inside it to move it, drag a corner to reshape — this photo then gets its own copy.' : 'No area yet: the whole photo is used.') +
         (feature ? `  ${feature.count} feature points ${shownPoly() ? 'inside the area' : 'in the photo'} (max 400).` : '');
       $('out').value = JSON.stringify(areas, (k, v) => (typeof v === 'number' ? Math.round(v * 1000) / 1000 : v), 1)
         .replace(/\[\n\s+([\d.]+),\n\s+([\d.]+)\n\s+\]/g, '[$1, $2]');
@@ -160,6 +168,34 @@
     function pos(e) {
       const r = canvas.getBoundingClientRect();
       return [Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))];
+    }
+    function inside(p, poly) {
+      let hit = false;
+      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+        const [xi, yi] = poly[i], [xj, yj] = poly[j];
+        if ((yi > p[1]) !== (yj > p[1]) && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) hit = !hit;
+      }
+      return hit;
+    }
+    // index after which a new corner goes: the edge closest to p
+    function nearestEdge(p, poly) {
+      const r = canvas.getBoundingClientRect();
+      let best = poly.length - 1, bd = Infinity;
+      for (let i = 0; i < poly.length; i++) {
+        const a = poly[i], b = poly[(i + 1) % poly.length];
+        const ax = a[0] * r.width, ay = a[1] * r.height, bx = b[0] * r.width, by = b[1] * r.height;
+        const px = p[0] * r.width, py = p[1] * r.height;
+        const dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy || 1;
+        const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / L));
+        const d = (ax + t * dx - px) ** 2 + (ay + t * dy - py) ** 2;
+        if (d < bd) { bd = d; best = i; }
+      }
+      return best;
+    }
+    // shared area (dashed) → this photo's own editable copy
+    function ownCopy() {
+      if (!ownPoly() && areas.default) areas[cur()] = areas.default.map((q) => q.slice());
+      return ownPoly();
     }
     function nearest(p) {
       const poly = ownPoly(); if (!poly) return -1;
@@ -170,27 +206,56 @@
     }
     canvas.addEventListener('pointerdown', (e) => {
       const p = pos(e);
-      drag = nearest(p);
-      if (drag < 0) {
-        if (!ownPoly()) areas[cur()] = [];
-        areas[cur()].push(p);
-        drag = areas[cur()].length - 1;
+      snapshot();
+      const poly = ownCopy();
+      const c = nearest(p);
+      if (c >= 0) drag = { kind: 'corner', i: c };
+      else if (poly && poly.length >= 3 && inside(p, poly)) drag = { kind: 'shape', start: p, orig: poly.map((q) => q.slice()) };
+      else {
+        if (!poly) areas[cur()] = [];
+        const P = areas[cur()];
+        const at = P.length >= 3 ? nearestEdge(p, P) + 1 : P.length;
+        P.splice(at, 0, p);
+        drag = { kind: 'corner', i: at };
       }
       canvas.setPointerCapture(e.pointerId);
       feature = null; draw();
     });
-    canvas.addEventListener('pointermove', (e) => { if (drag >= 0) { areas[cur()][drag] = pos(e); draw(); } });
-    canvas.addEventListener('pointerup', () => { drag = -1; renderStrip(); });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      const p = pos(e);
+      if (drag.kind === 'corner') areas[cur()][drag.i] = p;
+      else {
+        const dx = p[0] - drag.start[0], dy = p[1] - drag.start[1];
+        areas[cur()] = drag.orig.map(([x, y]) => [Math.min(1, Math.max(0, x + dx)), Math.min(1, Math.max(0, y + dy))]);
+      }
+      draw();
+    });
+    const endDrag = () => { if (drag) { drag = null; renderStrip(); draw(); } };
+    canvas.addEventListener('pointerup', endDrag);
+    canvas.addEventListener('pointercancel', endDrag);
+    function scaleShape(k) {
+      snapshot();
+      const poly = ownCopy();
+      if (!poly || poly.length < 3) { history.pop(); return; }
+      const cx = poly.reduce((a, q) => a + q[0], 0) / poly.length, cy = poly.reduce((a, q) => a + q[1], 0) / poly.length;
+      areas[cur()] = poly.map(([x, y]) => [Math.min(1, Math.max(0, cx + (x - cx) * k)), Math.min(1, Math.max(0, cy + (y - cy) * k))]);
+      feature = null; renderStrip(); draw();
+    }
 
     $('fig').onchange = (e) => selectFigure(e.target.value);
     $('prev').onclick = () => showPhoto(idx - 1);
     $('next').onclick = () => showPhoto(idx + 1);
-    $('undo').onclick = () => { if (ownPoly()) { ownPoly().pop(); if (!ownPoly().length) delete areas[cur()]; } feature = null; renderStrip(); draw(); };
-    $('clear').onclick = () => { delete areas[cur()]; feature = null; renderStrip(); draw(); };
+    $('undo').onclick = () => { if (history.length) areas = JSON.parse(history.pop()); feature = null; renderStrip(); draw(); };
+    $('smaller').onclick = () => scaleShape(0.95);
+    $('bigger').onclick = () => scaleShape(1.05);
+    // Clear: removes this photo's own shape (it falls back to the shared area, if there is one)
+    $('clear').onclick = () => { snapshot(); delete areas[cur()]; feature = null; renderStrip(); draw(); };
     $('all').onclick = () => {
       const p = ownPoly();
       if (!p || p.length < 3) { $('info').textContent = 'Draw an area with at least 3 corners first.'; return; }
       // aligned photos (e.g. AI variants of one shot) can share one area
+      snapshot();
       areas = { default: p.map((q) => q.slice()) };
       renderStrip(); draw();
     };
