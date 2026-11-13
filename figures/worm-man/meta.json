@@ -1,6 +1,10 @@
 {
   "title": "Worm Man",
   "subtitle": "",
-  "location": { "name": "Berlin", "lat": null, "lng": null },
+  "location": {
+    "name": "Berlin",
+    "lat": 52.503306,
+    "lng": 13.338944
+  },
   "order": 2
 }

@@ -111,18 +111,32 @@ The live app and the QR links are not affected.
 1. **GPS pre-filter** — only figures within 75 m of the phone are checked. Figures
    without `lat`/`lng` in `meta.json` are always checked; no GPS permission → all are checked.
 2. **Camera matching** — `js/matcher.js` (OpenCV.js, loaded from jsDelivr, ~3.5 MB):
-   ORB feature points in the frame vs. each reference photo, ratio test, then a RANSAC
-   homography (the geometry check). The score is the number of **inliers** — matches
-   that agree on one geometric fit. Wrong spot: 0–4. Another photo of the same spot: 10–200.
-3. **Overlay** — the best candidate's drawing fades in from 8 inliers on and is fully
-   visible at 25.
-4. **Unlock** — 25+ inliers on two checks in a row → saved like a normal unlock, then
-   the player opens (`./?f=<id>#listen`).
+   a few strong ORB feature points (max 400 per photo, 500 per camera frame), taken
+   **only from each photo's match area** — the main façade / object — then a ratio test
+   and a RANSAC homography (the geometry check). Background, sky, trees and anything an
+   AI variant invented behind the object are ignored. ORB searches 10 image scales, so
+   other cameras, frame sizes and zooming in (up to ~5×) still match.
+   The score is the number of **inliers** (matches that agree on one geometric fit) and
+   their **spread** (how much of the match area they span). Wrong spot: 0 inliers.
+   Other photos of the same spot: 27–103.
+3. **Overlay** — the best candidate's drawing fades in from 5 inliers on and is fully
+   visible at 15.
+4. **Unlock** — 15+ inliers spread over at least 25 % of the match area, on two checks
+   in a row → saved like a normal unlock, then the player opens (`./?f=<id>#listen`).
+
+### Match areas (`photos/areas.json`)
+
+Open **`/tools/area.html`** (on the live site, or locally via `python3 -m http.server`),
+pick the figure, and tap around the main façade / object on each photo. "Use for all
+photos" applies one area to every photo — fine for AI variants of the same shot.
+"Show feature points" shows which points the matcher would use. Download the result as
+`areas.json` into `figures/<figure>/photos/`, then push. Without an `areas.json` the
+whole photo is used.
 
 Only figures with photos in `photos/` can be found. More photos (different light, a few
 steps left/right) make matching more reliable; one photo only works close to where it was taken.
 
-Tuning via URL: `?unlock=25` `?show=8` `?radius=75` `?nogps=1` `?debug=1`.
+Tuning via URL: `?unlock=15` `?show=5` `?spread=0.25` `?radius=75` `?nogps=1` `?debug=1`.
 
 ## Running locally
 

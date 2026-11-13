@@ -32,12 +32,23 @@
       "subtitle": "",
       "location": {
         "name": "Berlin",
-        "lat": null,
-        "lng": null
+        "lat": 52.503306,
+        "lng": 13.338944
       },
       "drawing": "figures/worm-man/drawing/wormman1.png",
       "audio": "figures/worm-man/audio/Worm Man complaint test.m4a",
       "photos": [
+        "figures/worm-man/photos/_web/01_Heavy Rain.jpg",
+        "figures/worm-man/photos/_web/02_Snow(1).jpg",
+        "figures/worm-man/photos/_web/02_Snow.jpg",
+        "figures/worm-man/photos/_web/03_Fog.jpg",
+        "figures/worm-man/photos/_web/04_Blue Hour.jpg",
+        "figures/worm-man/photos/_web/05_Low Overcast(1).jpg",
+        "figures/worm-man/photos/_web/05_Low Overcast.jpg",
+        "figures/worm-man/photos/_web/07_Low Night(1).jpg",
+        "figures/worm-man/photos/_web/07_Low Night.jpg",
+        "figures/worm-man/photos/_web/08_High Golden(1).jpg",
+        "figures/worm-man/photos/_web/08_High Golden.jpg",
         "figures/worm-man/photos/_web/PHOTO-2026-10-21-17-14-35.jpg"
       ],
       "animation": [
