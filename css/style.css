@@ -286,3 +286,18 @@ button:disabled { cursor: default; opacity: .35; }
 /* same link treatment as the project descriptions on chismes.de */
 .text-link { color: inherit; text-decoration: underline; text-underline-offset: .15em; }
 .text-link:hover { opacity: .6; }
+
+/* ----- Player revealed after the capture ceremony (find.html → &new=1) ----- */
+.just-unlocked .view--player .masthead { animation: reveal-fade .6s ease both .15s; }
+.just-unlocked .player-stage__img { animation: reveal-fig 1s cubic-bezier(.2, .7, .2, 1) both .1s; }
+.just-unlocked .player-meta { animation: reveal-up .7s cubic-bezier(.2, .7, .2, 1) both .35s; }
+.just-unlocked .player { animation: reveal-up .7s cubic-bezier(.2, .7, .2, 1) both .5s; }
+@keyframes reveal-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes reveal-fig {
+  from { opacity: 0; transform: scale(calc(var(--fig-scale, 1) * .9)); }
+  to   { opacity: 1; transform: scale(var(--fig-scale, 1)); }
+}
+@keyframes reveal-up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .just-unlocked .player-stage__img, .just-unlocked .player-meta, .just-unlocked .player { animation-duration: .2s; }
+}

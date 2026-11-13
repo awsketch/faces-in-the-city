@@ -11,7 +11,13 @@
 //   4. UNLOCK inliers, spread over at least MIN_SPREAD of the match area, on two
 //      checks in a row → unlocked (same store as the app), then the player: ./?f=<id>#listen
 //
-// URL options for testing:  ?debug=1  ?unlock=15  ?show=5  ?spread=0.25  ?radius=75  ?nogps=1
+//   5. Capture ceremony (capture()): the frame freezes, the figure lights up as glowing
+//      white lines, white blooms out of it over the whole screen, then the player opens.
+//
+// URL options for testing:  ?unlock=15  ?show=5  ?spread=0.25  ?radius=75  ?nogps=1
+//   ?celebrate=<figure-id>   preview of the capture moment, no camera / GPS / matching:
+//                            a reference photo stands in for the camera, the match is
+//                            simulated, nothing is saved (player opens with &preview=1)
 
 (async function () {
   const $ = (id) => document.getElementById(id);
@@ -26,13 +32,11 @@
   const HITS_NEEDED = 2;              // consecutive checks at UNLOCK
   const TICK_PAUSE_MS = 150;          // pause between checks
   const STORE_KEY = 'berlin-kvetch.unlocked';
+  const PREVIEW = q.has('celebrate');
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const video = $('camera-feed');
   const overlay = $('camera-overlay');
-  const dbg = $('find-debug');
-  let debugOn = q.has('debug');
-  dbg.classList.toggle('hidden', !debugOn);
-  $('debug-toggle').addEventListener('click', () => { debugOn = !debugOn; dbg.classList.toggle('hidden', !debugOn); });
 
   // ---------- Data ----------
   let figures = [];
@@ -118,7 +122,6 @@
       const t0 = performance.now();
       try { await tick(); } catch (err) { console.warn('[find]', err); }
       tickMs = Math.round(performance.now() - t0);
-      renderDebug();
       await new Promise((r) => setTimeout(r, TICK_PAUSE_MS));
     }
   }
@@ -207,38 +210,96 @@
     return lineArtCache[url];
   }
 
-  // ---------- Unlock → player ----------
+  // ---------- Unlock → capture ceremony → player ----------
   function unlock(f) {
     if (!f || unlocking) return;
     unlocking = true;
-    try {
-      const u = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
-      u[f.id] = new Date().toISOString();
-      localStorage.setItem(STORE_KEY, JSON.stringify(u));
-    } catch {}
-    overlay.style.opacity = 1;
+    if (!PREVIEW) {
+      try {
+        const u = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+        u[f.id] = new Date().toISOString();
+        localStorage.setItem(STORE_KEY, JSON.stringify(u));
+      } catch {}
+    }
     setStatus('Match');
+    $('find-score').textContent = '100%';
+    $('find-meter').style.width = '100%';
     $('find-title').textContent = f.title;
-    $('find-flash').classList.remove('hidden');
-    setTimeout(() => { stop(); location.href = './?f=' + encodeURIComponent(f.id) + '#listen'; }, 1200);
+    const dest = './?f=' + encodeURIComponent(f.id) + (PREVIEW ? '&preview=1' : '') + '&new=1#listen';
+    capture(f).then(() => { location.href = dest; });
   }
 
-  // ---------- Debug readout ----------
-  function renderDebug() {
-    if (!debugOn) return;
-    const lines = [];
-    lines.push(`GPS ${gps.status}` + (gps.status === 'ok' ? `  ${gps.lat.toFixed(6)}, ${gps.lng.toFixed(6)}  ±${Math.round(gps.acc)} m` : ''));
-    lines.push(`OpenCV ${cvState} · check ${tickMs} ms · unlock ≥${UNLOCK} · show ≥${SHOW} · spread ≥${MIN_SPREAD} · radius ${RADIUS} m`);
-    for (const f of figures) {
-      const d = distance(f), c = isCandidate(f), r = last[f.id];
-      lines.push(
-        `${c ? '●' : '○'} ${f.title.padEnd(14).slice(0, 14)} ` +
-        (d == null ? (f.location && f.location.lat != null ? '   ? m' : ' no GPS') : String(Math.round(d)).padStart(5) + ' m') +
-        (c && r ? `  inl ${String(r.inliers).padStart(3)} / good ${String(r.good).padStart(3)} · spread ${Math.round((r.spread || 0) * 100)}%  ${Math.round((ema[f.id] || 0) * 100)}%` : ''),
-      );
+  async function capture(f) {
+    const view = $('view-find'), cap = $('capture'), fig = $('capture-fig');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // 1. Freeze the moment: the current camera frame becomes a still, the camera goes off.
+    const still = $('camera-still');
+    if (video.videoWidth) {
+      try {
+        const c = document.createElement('canvas');
+        c.width = video.videoWidth; c.height = video.videoHeight;
+        c.getContext('2d').drawImage(video, 0, 0);
+        still.src = c.toDataURL('image/jpeg', 0.85);
+      } catch {}
     }
-    dbg.textContent = lines.join('\n');
+    if (still.getAttribute('src')) still.classList.remove('hidden');
+    stop();
+
+    // The figure's line art, exactly where the overlay sat.
+    let src = shown === f.id ? overlay.getAttribute('src') : null;
+    if (!src && f.drawing) src = await lineArt(f.drawing);
+    fig.style.setProperty('--fig-scale', f.scale || 1);
+    if (src) { fig.src = src; if (fig.decode) await fig.decode().catch(() => {}); }
+    else fig.removeAttribute('src');
+    $('capture-name').textContent = f.title;
+
+    // White blooms out of the centre of the drawing (same box as .cam-overlay: padding 96 top / 140 bottom).
+    cap.style.setProperty('--cx', innerWidth / 2 + 'px');
+    cap.style.setProperty('--cy', (innerHeight + 96 - 140) / 2 + 'px');
+
+    try { if (navigator.vibrate) navigator.vibrate([30, 70, 30, 70, 160]); } catch {}
+    cap.classList.remove('hidden');
+    void cap.offsetWidth;                     // start the transitions from the current state
+
+    view.classList.add('is-capturing');       // 2. figure lights up, scene goes dark
+    await wait(reduce ? 350 : 1250);
+    view.classList.add('is-bloom');           // 3. white fills the screen
+    await wait(reduce ? 350 : 850);
+    view.classList.add('is-white');           // 4. "Found — <name>" on white
+    await wait(reduce ? 700 : 1300);
   }
-  setInterval(() => { if (!running) renderDebug(); }, 1000);
-  renderDebug();
+
+  // ---------- Manual unlock (TEMPORARY, testing only) ----------
+  // Unlocks the figure currently fading in; otherwise the nearest candidate.
+  function manualTarget() {
+    if (shown) return figureById(shown);
+    const cands = figures.filter(isCandidate);
+    const near = cands.map((f) => ({ f, d: distance(f) })).filter((x) => x.d != null).sort((a, b) => a.d - b.d);
+    return (near[0] && near[0].f) || cands[0] || figures[0];
+  }
+  $('manual-unlock').addEventListener('click', () => unlock(manualTarget()));
+
+  // ---------- ?celebrate preview ----------
+  async function runPreview() {
+    const f = figureById(q.get('celebrate')) || figures.find((x) => x.drawing) || figures[0];
+    if (!f) return;
+    $('find-start').classList.add('hidden');
+    $('find-hint').textContent = 'Preview: no camera, simulated match.';
+    const still = $('camera-still');
+    if (f.photos && f.photos[0]) { still.src = encodeURI(f.photos[0]); still.classList.remove('hidden'); }
+    await wait(600);
+    for (let i = 0; i <= 24; i++) {           // the drawing fades in like a real approach
+      const s = i / 24;
+      fade(f.id, s);
+      $('find-score').textContent = Math.round(s * 100) + '%';
+      $('find-meter').style.width = Math.round(s * 100) + '%';
+      setStatus(s >= 0.7 ? 'Almost there…' : s >= 0.3 ? 'Getting warmer…' : 'Searching…');
+      $('find-title').textContent = s >= 0.3 ? f.title : 'Looking around…';
+      await wait(100);
+    }
+    await wait(400);
+    unlock(f);
+  }
+  if (PREVIEW) runPreview();
 })();

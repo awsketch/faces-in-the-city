@@ -15,25 +15,63 @@
     #view-find .cam-overlay { opacity: 0; transition: opacity .35s ease; }
     .find-bar-meter { height: 2px; background: rgba(255,255,255,.25); margin-top: 12px; }
     .find-bar-meter > i { display: block; height: 100%; width: 0; background: var(--paper); transition: width .3s ease; }
-    .find-debug {
-      position: absolute; left: var(--margin); right: var(--margin); top: calc(96px + var(--safe-top));
-      padding: 10px 12px; background: rgba(0,0,0,.78); border: 1px solid var(--paper);
-      font: 12px/1.45 ui-monospace, Menlo, monospace; white-space: pre-wrap; color: var(--paper);
-      pointer-events: none;
+
+    /* frozen frame at the moment of capture (and the stand-in photo in ?celebrate preview) */
+    #camera-still { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; }
+
+    /* ---------- Capture ceremony ----------
+       1. is-capturing: frame freezes, bars slide away, the scene goes dark,
+          the figure ignites as glowing white lines
+       2. is-bloom:     solid white grows out of the figure until it fills the screen
+       3. is-white:     name of the figure on white, then the player opens (also white) */
+    .cam-bar, .cam-foot { transition: transform .55s cubic-bezier(.6, 0, .2, 1); }
+    .is-capturing .cam-bar { transform: translateY(-100%); }
+    .is-capturing .cam-foot { transform: translateY(100%); }
+    #camera-feed, #camera-still { transition: filter .8s ease; }
+    .is-capturing #camera-feed, .is-capturing #camera-still { filter: grayscale(1) brightness(.28) contrast(1.15); }
+    .is-capturing #camera-overlay { opacity: 0 !important; transition: opacity .2s ease; }
+
+    .capture { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+    #view-find .capture__fig { opacity: 0; filter: none; }
+    .is-capturing .capture__fig { animation: fig-ignite 1.15s cubic-bezier(.2, .7, .2, 1) forwards; }
+    @keyframes fig-ignite {
+      0%   { opacity: .5; transform: scale(var(--fig-scale, 1));
+             filter: invert(1) drop-shadow(0 0 0 #fff) drop-shadow(0 0 0 #fff) drop-shadow(0 0 0 #fff); }
+      30%  { opacity: 1;
+             filter: invert(1) drop-shadow(0 0 2px #fff) drop-shadow(0 0 10px #fff) drop-shadow(0 0 0 #fff); }
+      100% { opacity: 1; transform: scale(calc(var(--fig-scale, 1) * 1.06));
+             filter: invert(1) drop-shadow(0 0 4px #fff) drop-shadow(0 0 18px #fff) drop-shadow(0 0 44px #fff); }
     }
-    .find-flash {
-      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,.9); color: var(--ink);
-      font: 700 34px/1 var(--font-display); letter-spacing: -.02em;
+    .capture__white {
+      position: absolute; inset: 0; background: var(--paper);
+      clip-path: circle(0 at var(--cx, 50%) var(--cy, 50%));
+    }
+    .is-bloom .capture__white {
+      clip-path: circle(160vmax at var(--cx, 50%) var(--cy, 50%));
+      transition: clip-path .8s cubic-bezier(.7, 0, .3, 1);
+    }
+    .capture__card {
+      position: absolute; left: var(--margin); right: var(--margin); bottom: calc(56px + var(--safe-bottom));
+      display: flex; flex-direction: column; gap: 12px; color: var(--ink);
+      opacity: 0; transform: translateY(16px);
+    }
+    .is-white .capture__card { opacity: 1; transform: none; transition: opacity .5s ease, transform .6s cubic-bezier(.2, .7, .2, 1); }
+    .capture__name { font: 700 clamp(44px, 13vw, 80px)/.95 var(--font-display); letter-spacing: -.03em; }
+    @media (prefers-reduced-motion: reduce) {
+      .is-capturing .capture__fig { animation-duration: .3s; }
+      .is-bloom .capture__white { clip-path: none; transition: none; animation: fade-white .3s ease both; }
+      @keyframes fade-white { from { opacity: 0; } to { opacity: 1; } }
     }
   </style>
 </head>
 <body data-view="camera">
 
+  <!-- Preview of the capture moment without being on the spot: find.html?celebrate=sad-lego -->
   <!-- TEST PAGE: no QR code. GPS narrows down the figures, feature-point
        matching on the camera picks one, its drawing fades in, a solid match unlocks. -->
   <section id="view-find" class="view view--camera" aria-label="Find a figure">
     <video id="camera-feed" autoplay playsinline muted></video>
+    <img id="camera-still" class="hidden" alt="" />
     <img id="camera-overlay" class="cam-overlay" alt="" />
 
     <header class="cam-bar">
@@ -41,9 +79,9 @@
         <span class="brand-small">berlin <b>Kvetch</b> · test</span>
         <span id="find-title" class="cam-bar__name">Looking around…</span>
       </div>
-      <button id="debug-toggle" class="icon-btn icon-btn--light" aria-label="Show details">
-        <span class="material-symbols-outlined" aria-hidden="true">bug_report</span>
-      </button>
+      <a class="icon-btn icon-btn--light" href="./#collection" aria-label="Collection">
+        <span class="material-symbols-outlined" aria-hidden="true">grid_view</span>
+      </a>
     </header>
 
     <div id="find-start" class="cam-start">
@@ -51,14 +89,22 @@
       <button id="find-start-btn" class="btn btn--light">Start camera</button>
     </div>
 
-    <pre id="find-debug" class="find-debug hidden"></pre>
-    <div id="find-flash" class="find-flash hidden">Unlocked</div>
+    <!-- capture ceremony (see the CSS above and capture() in find.js) -->
+    <div id="capture" class="capture hidden" aria-live="assertive">
+      <img id="capture-fig" class="cam-overlay capture__fig" alt="" />
+      <div class="capture__white"></div>
+      <div class="capture__card">
+        <span class="label-caps">Found</span>
+        <span id="capture-name" class="capture__name"></span>
+      </div>
+    </div>
 
     <footer class="cam-foot">
       <p id="find-hint" class="cam-foot__hint">Point the camera at the spot.</p>
       <div class="cam-foot__row">
         <span class="label-caps"><span id="find-status">Waiting</span> · <span id="find-score">0%</span></span>
-        <a class="btn btn--light btn--small" href="./#collection">Collection</a>
+        <!-- TEMPORARY: manual unlock while the find flow is being tested -->
+        <button id="manual-unlock" class="btn btn--light btn--small">Unlock</button>
       </div>
       <div class="find-bar-meter"><i id="find-meter"></i></div>
     </footer>

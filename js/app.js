@@ -19,7 +19,10 @@
   // Computer = no touch-first pointer. There, only the (always empty) collection
   // page with the project description is reachable; nothing can be unlocked.
   // The demo page is exempt so it can still be shown on any screen.
-  const DESKTOP = !DEMO && !window.matchMedia('(pointer: coarse) and (hover: none)').matches;
+  // Preview (find.html?celebrate → ?f=<id>&preview=1#listen): shows that figure's
+  // player on any screen, unlocked in memory only — nothing lands in the collection.
+  const PREVIEW = new URLSearchParams(location.search).has('preview');
+  const DESKTOP = !DEMO && !PREVIEW && !window.matchMedia('(pointer: coarse) and (hover: none)').matches;
   if (DESKTOP) {
     document.body.classList.add('desktop');
     if (location.search || location.hash) history.replaceState(null, '', location.pathname);
@@ -28,13 +31,14 @@
   // ---------- Unlock store ----------
   function readUnlocked() {
     if (DEMO) return demoUnlocked;
+    if (PREVIEW) return { [new URLSearchParams(location.search).get('f')]: 'preview' };
     if (DESKTOP) return {};
     try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; }
   }
   let unlocked = readUnlocked();
   function isUnlocked(id) { return Boolean(unlocked[id]); }
   function markUnlocked(id) {
-    if (DESKTOP) return;
+    if (DESKTOP || PREVIEW) return;
     unlocked[id] = new Date().toISOString();
     if (DEMO) return;
     try { localStorage.setItem(STORE_KEY, JSON.stringify(unlocked)); } catch {}
@@ -260,6 +264,17 @@
   }
 
   let justUnlocked = false;
+  // Arriving from find.html's capture ceremony (&new=1): the player is revealed out of the white.
+  {
+    const qs = new URLSearchParams(location.search);
+    if (qs.has('new')) {
+      justUnlocked = true;
+      document.body.classList.add('just-unlocked');
+      setTimeout(() => document.body.classList.remove('just-unlocked'), 2500);
+      qs.delete('new');
+      history.replaceState(null, '', location.pathname + (qs.toString() ? '?' + qs : '') + location.hash);
+    }
+  }
   function unlock() {
     const f = figure();
     if (!f) return;
