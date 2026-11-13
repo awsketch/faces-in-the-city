@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="robots" content="noindex" />
+  <title>berlin Kvetch — Find (test)</title>
+  <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* find.html only: overlay starts invisible and fades in with the match score */
+    #view-find .cam-overlay { opacity: 0; transition: opacity .35s ease; }
+    .find-bar-meter { height: 2px; background: rgba(255,255,255,.25); margin-top: 12px; }
+    .find-bar-meter > i { display: block; height: 100%; width: 0; background: var(--paper); transition: width .3s ease; }
+    .find-debug {
+      position: absolute; left: var(--margin); right: var(--margin); top: calc(96px + var(--safe-top));
+      padding: 10px 12px; background: rgba(0,0,0,.78); border: 1px solid var(--paper);
+      font: 12px/1.45 ui-monospace, Menlo, monospace; white-space: pre-wrap; color: var(--paper);
+      pointer-events: none;
+    }
+    .find-flash {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.9); color: var(--ink);
+      font: 700 34px/1 var(--font-display); letter-spacing: -.02em;
+    }
+  </style>
+</head>
+<body data-view="camera">
+
+  <!-- TEST PAGE: no QR code. GPS narrows down the figures, feature-point
+       matching on the camera picks one, its drawing fades in, a solid match unlocks. -->
+  <section id="view-find" class="view view--camera" aria-label="Find a figure">
+    <video id="camera-feed" autoplay playsinline muted></video>
+    <img id="camera-overlay" class="cam-overlay" alt="" />
+
+    <header class="cam-bar">
+      <div class="cam-bar__title">
+        <span class="brand-small">berlin <b>Kvetch</b> · test</span>
+        <span id="find-title" class="cam-bar__name">Looking around…</span>
+      </div>
+      <button id="debug-toggle" class="icon-btn icon-btn--light" aria-label="Show details">
+        <span class="material-symbols-outlined" aria-hidden="true">bug_report</span>
+      </button>
+    </header>
+
+    <div id="find-start" class="cam-start">
+      <p id="find-start-msg">Stand where you think a figure hides, then start. The camera and your location are used on this phone only.</p>
+      <button id="find-start-btn" class="btn btn--light">Start camera</button>
+    </div>
+
+    <pre id="find-debug" class="find-debug hidden"></pre>
+    <div id="find-flash" class="find-flash hidden">Unlocked</div>
+
+    <footer class="cam-foot">
+      <p id="find-hint" class="cam-foot__hint">Point the camera at the spot.</p>
+      <div class="cam-foot__row">
+        <span class="label-caps"><span id="find-status">Waiting</span> · <span id="find-score">0%</span></span>
+        <a class="btn btn--light btn--small" href="./#collection">Collection</a>
+      </div>
+      <div class="find-bar-meter"><i id="find-meter"></i></div>
+    </footer>
+  </section>
+
+  <script src="js/matcher.js"></script>
+  <script src="js/find.js"></script>
+</body>
+</html>
