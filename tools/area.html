@@ -26,8 +26,8 @@
 </head>
 <body>
   <h1>berlin <b>Kvetch</b> · match areas</h1>
-  <p>Draw around the <b>main façade or object</b> on each reference photo: tap to add corners, drag a corner to move it,
-     drag inside the shape to move the whole shape. On a photo that uses the shared area (dashed), just start dragging:
+  <p>Draw around the <b>main façade or object</b> on each reference photo: tap corner after corner around the outline,
+     drag a corner to move it, tap right on an edge to add a corner there, drag inside the shape to move the whole shape. On a photo that uses the shared area (dashed), just start dragging:
      it becomes this photo's own copy.
      Leave out sky, trees, cars, people, shop windows and anything the AI may have invented in the background.
      The camera matching only uses feature points inside this area.</p>
@@ -74,7 +74,7 @@
     if (!figures.length) { $('status').textContent = 'No figure has photos yet'; return; }
     for (const f of figures) $('fig').add(new Option(f.title, f.id));
 
-    let fig = null, areas = {}, idx = 0, img = null, feature = null;
+    let fig = null, areas = {}, idx = 0, img = null, feature = null, darkLayer = null;
     let drag = null;            // { kind: 'corner', i } | { kind: 'shape', start, orig }
     const history = [];         // snapshots of `areas` for Undo
     const snapshot = () => { history.push(JSON.stringify(areas)); if (history.length > 100) history.shift(); };
@@ -130,17 +130,22 @@
       const poly = shownPoly();
       const inherited = poly && !ownPoly();
       if (poly && poly.length) {
-        // darken everything outside the area
-        ctx.save();
-        ctx.fillStyle = 'rgba(0,0,0,.55)';
-        ctx.beginPath();
-        ctx.rect(0, 0, canvas.width, canvas.height);
+        // darken everything outside the area (same "inside" rule as dragging)
+        const shade = darkLayer || (darkLayer = document.createElement('canvas'));
+        shade.width = canvas.width; shade.height = canvas.height;
+        const sc = shade.getContext('2d');
+        sc.fillStyle = 'rgba(0,0,0,.55)';
+        sc.fillRect(0, 0, shade.width, shade.height);
         if (poly.length >= 3) {
-          poly.forEach(([x, y], j) => (j ? ctx.lineTo : ctx.moveTo).call(ctx, x * canvas.width, y * canvas.height));
-          ctx.closePath();
+          sc.globalCompositeOperation = 'destination-out';
+          sc.fillStyle = '#000';   // opaque, so the hole is fully cut out
+          sc.beginPath();
+          poly.forEach(([x, y], j) => (j ? sc.lineTo : sc.moveTo).call(sc, x * shade.width, y * shade.height));
+          sc.closePath();
+          sc.fill('nonzero');
+          sc.globalCompositeOperation = 'source-over';
         }
-        ctx.fill('evenodd');
-        ctx.restore();
+        ctx.drawImage(shade, 0, 0);
         ctx.save();
         ctx.setLineDash(inherited ? [8, 6] : []);
         ctx.lineWidth = 3; ctx.strokeStyle = '#fff';
@@ -169,13 +174,16 @@
       const r = canvas.getBoundingClientRect();
       return [Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))];
     }
+    // nonzero winding: everything enclosed by the outline counts as inside, even if it crosses itself
     function inside(p, poly) {
-      let hit = false;
-      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-        const [xi, yi] = poly[i], [xj, yj] = poly[j];
-        if ((yi > p[1]) !== (yj > p[1]) && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) hit = !hit;
+      let w = 0;
+      for (let i = 0; i < poly.length; i++) {
+        const [x1, y1] = poly[i], [x2, y2] = poly[(i + 1) % poly.length];
+        const cross = (x2 - x1) * (p[1] - y1) - (p[0] - x1) * (y2 - y1);
+        if (y1 <= p[1]) { if (y2 > p[1] && cross > 0) w++; }
+        else if (y2 <= p[1] && cross < 0) w--;
       }
-      return hit;
+      return w !== 0;
     }
     // index after which a new corner goes: the edge closest to p
     function nearestEdge(p, poly) {
@@ -190,7 +198,7 @@
         const d = (ax + t * dx - px) ** 2 + (ay + t * dy - py) ** 2;
         if (d < bd) { bd = d; best = i; }
       }
-      return best;
+      return { i: best, px: Math.sqrt(bd) };   // edge index, distance in screen pixels
     }
     // shared area (dashed) → this photo's own editable copy
     function ownCopy() {
@@ -214,7 +222,9 @@
       else {
         if (!poly) areas[cur()] = [];
         const P = areas[cur()];
-        const at = P.length >= 3 ? nearestEdge(p, P) + 1 : P.length;
+        // tap right on an edge (≤ 12 px) → new corner in that edge; anywhere else → next corner of the outline
+        const e = P.length >= 3 ? nearestEdge(p, P) : null;
+        const at = e && e.px <= 12 ? e.i + 1 : P.length;
         P.splice(at, 0, p);
         drag = { kind: 'corner', i: at };
       }
