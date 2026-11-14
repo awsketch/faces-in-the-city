@@ -1,6 +1,10 @@
 {
   "title": "Rosa Needs Sun",
   "subtitle": "",
-  "location": { "name": "Berlin", "lat": null, "lng": null },
+  "location": {
+    "name": "Berlin",
+    "lat": 52.500917,
+    "lng": 13.346417
+  },
   "order": 4
 }

@@ -1059,8 +1059,8 @@
       "subtitle": "",
       "location": {
         "name": "Berlin",
-        "lat": null,
-        "lng": null
+        "lat": 52.500917,
+        "lng": 13.346417
       },
       "drawing": "figures/rosa-needs-sun/drawing/rosa1 Kopie.png",
       "audio": "figures/rosa-needs-sun/audio/Rosa needs sun.m4a",
