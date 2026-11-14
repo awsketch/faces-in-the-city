@@ -46,7 +46,8 @@
     <button id="undo" class="btn btn--small">Undo</button>
     <button id="smaller" class="btn btn--small">Smaller</button>
     <button id="bigger" class="btn btn--small">Bigger</button>
-    <button id="clear" class="btn btn--small">Clear</button>
+    <button id="clear" class="btn btn--small">Clear this photo</button>
+    <button id="restart" class="btn btn--small">Start over</button>
     <button id="all" class="btn btn--small">Use for all photos</button>
     <button id="points" class="btn btn--small">Show feature points</button>
   </div>
@@ -266,6 +267,13 @@
     $('bigger').onclick = () => scaleShape(1.05);
     // Clear: removes this photo's own shape (it falls back to the shared area, if there is one)
     $('clear').onclick = () => { snapshot(); delete areas[cur()]; feature = null; renderStrip(); draw(); };
+    // Start over: removes every area of this figure (all photos and the shared one). Undo brings it back.
+    $('restart').onclick = () => {
+      if (!Object.keys(areas).length) return;
+      if (!confirm('Delete all areas of this figure (every photo and the shared one) and start over?')) return;
+      snapshot(); areas = {}; feature = null; renderStrip(); draw();
+      $('info').textContent = 'All areas removed. Draw a new one, then download the area file and replace the old one in photos/.';
+    };
     $('all').onclick = () => {
       const p = ownPoly();
       if (!p || p.length < 3) { $('info').textContent = 'Draw an area with at least 3 corners first.'; return; }
