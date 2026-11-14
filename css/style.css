@@ -301,3 +301,66 @@ button:disabled { cursor: default; opacity: .35; }
 @media (prefers-reduced-motion: reduce) {
   .just-unlocked .player-stage__img, .just-unlocked .player-meta, .just-unlocked .player { animation-duration: .2s; }
 }
+
+/* ============ HOME (start page) ============
+   Black camera half on top, white collection half below; the tapped half grows
+   over the whole screen (.is-camera / .is-coll), then its screen opens. */
+.view--home {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  background: var(--paper);
+}
+.home-half { position: relative; display: flex; flex-direction: column; overflow: hidden; min-height: 0;
+  transition: flex-basis .45s cubic-bezier(.2, .7, .2, 1), padding .45s cubic-bezier(.2, .7, .2, 1); }
+.home-half--camera {
+  flex: 0 0 52%;
+  background: var(--ink); color: var(--paper);
+  padding: calc(20px + var(--safe-top)) var(--margin) 28px;
+}
+.home-half--coll { flex: 1 1 0; }
+.view--home.is-camera .home-half--camera { flex-basis: 100%; }
+.view--home.is-coll .home-half--camera { flex-basis: 0%; padding-top: 0; padding-bottom: 0; }
+.view--home.is-camera .home-center, .view--home.is-coll .home-circle--light { opacity: 0; transition: opacity .25s ease; }
+.home-brand { font: 400 22px/1 var(--font-display); letter-spacing: -.02em; color: var(--paper); flex: none; }
+.home-brand b { font-weight: 700; }
+.home-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; min-height: 0; }
+.home-hint { margin: 0; max-width: 280px; text-align: center; font-size: 14px; line-height: 1.5; }
+
+.home-circle {
+  width: 176px; height: 176px; flex: none;
+  border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  text-align: center;
+}
+.home-circle .material-symbols-outlined { font-size: 38px; }
+.home-circle--dark { border: 2px solid var(--paper); background: var(--ink); color: var(--paper); }
+.home-circle--dark:active { background: var(--paper); color: var(--ink); }
+.home-circle--light {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  border: 2px solid var(--ink); background: var(--paper); color: var(--ink);
+}
+.home-circle--light:active { background: var(--ink); color: var(--paper); }
+@media (hover: hover) {
+  .home-circle--dark:hover { background: var(--paper); color: var(--ink); }
+  .home-circle--light:hover { background: var(--ink); color: var(--paper); }
+}
+
+/* preview of the collection behind the round button: found figures very faint, ? for the rest */
+.home-preview {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.home-preview li {
+  aspect-ratio: 1 / 1.05;
+  border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink);
+  display: flex; align-items: center; justify-content: center;
+}
+.home-preview li:nth-child(3n) { border-right: 0; }
+.home-preview img { width: 100%; height: 100%; max-width: none; object-fit: contain; padding: 10px; opacity: .18; }
+.home-preview .is-missing, .coll-tile__q { font: 400 32px/1 var(--font-display); color: var(--line-soft); }
+
+/* collection: figures not found yet */
+.coll-tile--missing .coll-tile__img { display: flex; align-items: center; justify-content: center; }
+.coll-tile--missing .coll-tile__name { color: var(--ink-mute); font-weight: 600; font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { .home-half { transition-duration: .01s; } }

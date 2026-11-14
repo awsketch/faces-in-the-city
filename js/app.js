@@ -1,6 +1,7 @@
-// app.js — Berlin Kvetch. One page, three views:
+// app.js — Berlin Kvetch. One page, four views:
 //
-//   ?f=<id>            camera with that figure's drawing as overlay (QR target)
+//   (no parameters)    home: "Open camera" (→ find.html) and "Open collection"
+//   ?f=<id>            camera with that figure's drawing as overlay (old QR links)
 //   ?f=<id>#listen     player (only once the figure is unlocked)
 //   #collection        which figures are unlocked (reachable from both)
 //
@@ -60,7 +61,7 @@
     history.replaceState(null, '', location.pathname + '?f=' + encodeURIComponent(figures[0].id));
   }
 
-  const views = { camera: $('view-camera'), player: $('view-player'), collection: $('view-collection') };
+  const views = { home: $('view-home'), camera: $('view-camera'), player: $('view-player'), collection: $('view-collection') };
   let current = null;       // current view name
   let previous = null;      // view before collection, for the back button
 
@@ -70,7 +71,8 @@
   function wantedView() {
     const hash = location.hash.replace('#', '');
     const f = figure();
-    if (DESKTOP || hash === 'collection' || !f) return 'collection';
+    if (DESKTOP || hash === 'collection') return 'collection';
+    if (!f) return 'home';
     if (hash === 'listen' && isUnlocked(f.id)) return 'player';
     return 'camera';
   }
@@ -94,7 +96,38 @@
     if (next === 'camera') enterCamera();
     if (next === 'player') enterPlayer();
     if (next === 'collection') renderCollection();
+    if (next === 'home') renderHome();
   }
+
+  // ---------- Home ----------
+  const home = $('view-home');
+  function renderHome() {
+    home.classList.remove('is-camera', 'is-coll');
+    unlocked = readUnlocked();
+    const found = figures.filter((f) => isUnlocked(f.id) && f.drawing);
+    const ul = $('home-preview');
+    ul.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const li = document.createElement('li');
+      const f = found[i];
+      if (f) { const img = document.createElement('img'); img.src = encodeURI(f.drawing); img.alt = ''; li.appendChild(img); }
+      else { li.className = 'is-missing'; li.textContent = '?'; }
+      ul.appendChild(li);
+    }
+  }
+  const GROW_MS = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 450;
+  $('home-camera').addEventListener('click', (e) => {
+    e.preventDefault();
+    home.classList.add('is-camera');
+    setTimeout(() => { location.href = 'find.html'; }, GROW_MS);
+  });
+  $('home-coll').addEventListener('click', (e) => {
+    e.preventDefault();
+    home.classList.add('is-coll');
+    setTimeout(() => navigate(null, 'collection'), GROW_MS);
+  });
+  // back from find.html (browser back) can restore the grown page from cache: reset it
+  window.addEventListener('pageshow', () => { if (current === 'home') renderHome(); });
 
   window.addEventListener('popstate', render);
   window.addEventListener('hashchange', render);
@@ -406,10 +439,7 @@
     const found = figures
       .map((f, i) => ({ f, no: i + 1 }))
       .filter(({ f }) => isUnlocked(f.id));
-    if (found.length === 0) {
-      grid.innerHTML = '<li class="coll-empty">Nothing found yet.</li>';
-    }
-    found.forEach(({ f, no }) => {
+    found.forEach(({ f }) => {
       const li = document.createElement('li');
       li.className = 'coll-tile';
       const a = document.createElement('a');
@@ -422,17 +452,29 @@
       a.innerHTML = `
         <span class="coll-tile__img">${f.drawing ? `<img src="${encodeURI(f.drawing)}" alt="" loading="lazy" />` : ''}</span>
         <span class="coll-tile__meta">
-          <span class="label-caps">No. ${String(no).padStart(2, '0')}</span>
           <span class="coll-tile__name">${escapeHtml(f.title)}</span>
         </span>`;
       li.appendChild(a);
       grid.appendChild(li);
     });
+    // figures not found yet: a question mark, no name
+    figures.filter((f) => !isUnlocked(f.id)).forEach(() => {
+      const li = document.createElement('li');
+      li.className = 'coll-tile coll-tile--missing';
+      li.innerHTML = `
+        <span class="coll-tile__img"><span class="coll-tile__q" aria-hidden="true">?</span></span>
+        <span class="coll-tile__meta"><span class="coll-tile__name">Not found yet</span></span>`;
+      grid.appendChild(li);
+    });
 
+    // ✕: back to the player or the old QR camera if we came from there, otherwise home
     const back = $('coll-back');
-    const canGoBack = Boolean(figure());
-    back.classList.toggle('hidden', !canGoBack);
-    back.onclick = () => navigate(null, previous === 'player' && isUnlocked(figureId()) ? 'listen' : '');
+    back.classList.remove('hidden');
+    back.onclick = () => {
+      if (previous === 'player' && isUnlocked(figureId())) navigate(null, 'listen');
+      else if (previous === 'camera' && figure()) navigate(null, '');
+      else navigate('', '');
+    };
   }
 
   function escapeHtml(s) {
